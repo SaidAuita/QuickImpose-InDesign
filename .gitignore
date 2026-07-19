@@ -1,0 +1,3 @@
+# Ignore user settings and custom presets
+RESOURCES/Data/Settings.txt
+RESOURCES/Data/Presets/

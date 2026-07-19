@@ -1,0 +1,6 @@
+Tabloid Extra (13x19); 13; 19
+Digital Press (12x18); 12; 18
+Tabloid (11x17); 11; 17
+Letter (8.5x11); 8.5; 11
+Legal (8.5x14); 8.5; 14
+Half Letter (5.5x8.5); 5.5; 8.5
