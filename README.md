@@ -1,6 +1,6 @@
 # QuickImpose v1.10
 
-**QuickImpose** is a professional and fast ExtendScript script for sheet imposition in Adobe InDesign. Designed as a modern, open-source, and free replacement for the outdated IDImposer plugin, it fully supports modern versions of InDesign (including 2024–2026+).
+**QuickImpose** is a professional and fast ExtendScript script for sheet imposition in Adobe InDesign. It supports modern versions of InDesign (tested on version 2026).
 
 ![QuickImpose Dialog](images/QuickImpose.png)
 
@@ -60,7 +60,7 @@
 
 ## 🇷🇺 Описание на русском языке (Russian)
 
-**QuickImpose** — это профессиональный и быстрый ExtendScript-скрипт для автоматизации спуска полос (imposition) в Adobe InDesign. Скрипт создан как современная, открытая и бесплатная замена устаревшему плагину IDImposer, полностью поддерживающая современные версии InDesign (включая 2024–2026+).
+**QuickImpose** — это профессиональный и быстрый ExtendScript-скрипт для автоматизации спуска полос (imposition) в Adobe InDesign. Поддерживаются современные версии InDesign (тестировалось на версии 2026).
 
 ### 🚀 Основные возможности
 
