@@ -1,18 +1,27 @@
 // #target indesign
-// QuickImpose.jsx
-// An open-source imposition script for Adobe InDesign.
-// Replaces expired IDImposer plugins on modern InDesign versions.
+// PDF_QuickImpose.jsx
+// An open-source imposition script for Adobe InDesign with PDF import capabilities.
 
 var uiLabels = {};
 
 var translations = {
     ru: {
-        title: "QuickImpose v1.2 — Спуск полос",
+        title: "PDF QuickImpose v1.2 — Спуск полос из PDF",
+        select_pdf: "Выберите PDF файл для спуска полос",
+        bleed_title: "PDF QuickImpose — Настройка вылетов (Bleed)",
+        pnl_pdf_info: "Информация о PDF",
+        pnl_bleed_settings: "Настройка вылетов",
         file: "Файл: ",
         pages: " стр.",
         size: "Размер: ",
         bleeds: "Вылеты: ",
-        about_text: "QuickImpose v1.2\n\nПоддерживаются современные версии Adobe InDesign.\nТестировалось на версии 2026.\n\nАвтор: Said & Antigravity.",
+        pdf_size_lbl: "Размер PDF (с вылетами): ",
+        pdf_pages_lbl: "Количество страниц: ",
+        bleed_input_lbl: "Вылеты в PDF (Bleed, мм): ",
+        trim_calc_lbl: "Обрезной размер (Trim): ",
+        chk_ask_bleed: "Запрашивать вылеты каждый раз",
+        btn_next: "Далее ->",
+        about_text: "PDF QuickImpose v1.2\n\nПоддерживаются современные версии Adobe InDesign.\nТестировалось на версии 2026.\n\nАвтор: Said & Antigravity.",
         btn_about: "?",
         pnl_type_units: "Спуск и Единицы",
         lbl_imp_type: "Тип спуска:",
@@ -68,7 +77,7 @@ var translations = {
         btn_impose: "Спуск полос",
         lbl_author_link: "Автор: github.com/SaidAuita/QuickImpose-InDesign",
         lbl_more_scripts: "Другие скрипты: ph-cu-s.com/tools",
-        alert_no_doc: "Пожалуйста, откройте документ InDesign перед запуском скрипта.",
+        alert_no_doc: "Пожалуйста, выберите PDF файл.",
         alert_preset_name: "Пожалуйста, введите название пресета.",
         alert_preset_saved: "Настройки успешно сохранены под именем: ",
         alert_preset_loaded: "Настройки успешно загружены: ",
@@ -77,9 +86,9 @@ var translations = {
         alert_success: "Спуск полос успешно завершен!\nСоздано Flats: ",
         alert_err_export: "Ошибка при экспорте во временный PDF:\n",
         imp_types: [
-            "Saddle Stitch (Скрепка)",
-            "Perfect Bound (КБС)",
-            "N Up Consecutive (Сетка)",
+            "Saddle Stitch (Скрепка)", 
+            "Perfect Bound (КБС)", 
+            "N Up Consecutive (Сетка)", 
             "Cut Stack (Порезка стопой)",
             "Step & Repeat (Повтор)"
         ],
@@ -106,12 +115,22 @@ var translations = {
         btn_preview: "Схема"
     },
     en: {
-        title: "QuickImpose v1.2 — Imposition",
+        title: "PDF QuickImpose v1.2 — Imposition from PDF",
+        select_pdf: "Select PDF file for Imposition",
+        bleed_title: "PDF QuickImpose — Bleed Setup",
+        pnl_pdf_info: "PDF Information",
+        pnl_bleed_settings: "Bleed Settings",
         file: "File: ",
         pages: " pages",
         size: "Size: ",
         bleeds: "Bleeds: ",
-        about_text: "QuickImpose v1.2\n\nSupports modern versions of Adobe InDesign.\nTested on version 2026.\n\nAuthor: Said & Antigravity.",
+        pdf_size_lbl: "PDF Size (incl. bleeds): ",
+        pdf_pages_lbl: "Page Count: ",
+        bleed_input_lbl: "PDF Bleed (mm): ",
+        trim_calc_lbl: "Trim Size: ",
+        chk_ask_bleed: "Ask bleed every time",
+        btn_next: "Next ->",
+        about_text: "PDF QuickImpose v1.2\n\nSupports modern versions of Adobe InDesign.\nTested on version 2026.\n\nAuthor: Said & Antigravity.",
         btn_about: "?",
         pnl_type_units: "Imposition and Units",
         lbl_imp_type: "Imposition:",
@@ -167,7 +186,7 @@ var translations = {
         btn_impose: "Impose",
         lbl_author_link: "Author: github.com/SaidAuita/QuickImpose-InDesign",
         lbl_more_scripts: "More scripts: ph-cu-s.com/tools",
-        alert_no_doc: "Please open an InDesign document before running the script.",
+        alert_no_doc: "Please select a PDF file.",
         alert_preset_name: "Please enter preset name.",
         alert_preset_saved: "Settings successfully saved as: ",
         alert_preset_loaded: "Settings successfully loaded: ",
@@ -176,10 +195,10 @@ var translations = {
         alert_success: "Imposition completed successfully!\nCreated Flats: ",
         alert_err_export: "Error exporting temporary PDF:\n",
         imp_types: [
-            "Saddle Stitch",
-            "Perfect Bound",
-            "N Up Consecutive",
-            "Cut Stack",
+            "Saddle Stitch", 
+            "Perfect Bound", 
+            "N Up Consecutive", 
+            "Cut Stack", 
             "Step & Repeat (Labels)"
         ],
         tip_edit_paper_sizes: "Edit paper size format list",
@@ -206,6 +225,108 @@ var translations = {
     }
 };
 
+// ==========================================================
+// --- PDF IMPORT AND PAGE COUNTING HELPERS ---
+// ==========================================================
+
+function safePlacePDF(rect, file, pgNum) {
+    app.pdfPlacePreferences.pageNumber = pgNum;
+    
+    try {
+        app.pdfPlacePreferences.pdfCrop = PDFCrop.CROP_BLEED;
+        return rect.place(file)[0];
+    } catch (e) {}
+
+    try {
+        app.pdfPlacePreferences.pdfCrop = PDFCrop.CROP_MEDIA;
+        return rect.place(file)[0];
+    } catch (e) {}
+
+    try {
+        app.pdfPlacePreferences.pdfCrop = PDFCrop.cropBleed;
+        return rect.place(file)[0];
+    } catch (e) {}
+
+    try {
+        app.pdfPlacePreferences.pdfCrop = PDFCrop.cropMedia;
+        return rect.place(file)[0];
+    } catch (e) {}
+
+    return rect.place(file)[0];
+}
+
+function getPDFSize(file) {
+    var tempDoc = app.documents.add(false); 
+    var w = 210, h = 297;
+    try {
+        tempDoc.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.MILLIMETERS;
+        tempDoc.viewPreferences.verticalMeasurementUnits = MeasurementUnits.MILLIMETERS;
+        var tempPage = tempDoc.pages[0];
+        var tempRect = tempPage.rectangles.add();
+        var pdfItem = safePlacePDF(tempRect, file, 1);
+        var bounds = pdfItem.geometricBounds; 
+        w = Math.round((bounds[3] - bounds[1]) * 10) / 10;
+        h = Math.round((bounds[2] - bounds[0]) * 10) / 10;
+    } catch(e) {}
+    finally {
+        try {
+            tempDoc.close(SaveOptions.NO);
+        } catch (err) {}
+    }
+    return { width: w, height: h };
+}
+
+function countPDFPages(file) {
+    var tempDoc = app.documents.add(false); 
+    var totalPages = 1;
+    try {
+        var tempPage = tempDoc.pages[0];
+        var tempRect = tempPage.rectangles.add();
+        
+        var pdfItem = safePlacePDF(tempRect, file, 1);
+        
+        var k = 1;
+        while (true) {
+            var testPage = k * 2;
+            var testItem = safePlacePDF(tempRect, file, testPage);
+            var r = testItem.pdfAttributes.pageNumber;
+            
+            if (r === testPage) {
+                k = testPage;
+            } else {
+                break;
+            }
+            
+            if (k > 9999) {
+                break;
+            }
+        }
+        
+        var low = k;
+        var high = k * 2 - 1;
+        
+        while (low <= high) {
+            var mid = Math.floor((low + high) / 2);
+            var testItem = safePlacePDF(tempRect, file, mid);
+            var r = testItem.pdfAttributes.pageNumber;
+            
+            if (r === mid) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        totalPages = high;
+    } catch (e) {
+        totalPages = 1;
+    } finally {
+        try {
+            tempDoc.close(SaveOptions.NO);
+        } catch (err) {}
+    }
+    return totalPages;
+}
+
 function loadLangTrans(lang, resDir) {
     if (!translations[lang]) {
         translations[lang] = {};
@@ -227,7 +348,7 @@ function loadLangTrans(lang, resDir) {
                         }
                     }
                 }
-            } catch (e) { }
+            } catch(e) {}
         }
     }
     var t = translations[lang] || translations["en"];
@@ -242,63 +363,22 @@ function loadLangTrans(lang, resDir) {
     return t;
 }
 
-function runQuickImpose() {
+// ==========================================================
+// --- MAIN ENTRY POINT ---
+// ==========================================================
+
+function main() {
     var initialLang = "en";
     try {
         if (app.locale == Locale.RUSSIAN_LOCALE) {
             initialLang = "ru";
         }
-    } catch (e) { }
-
-    if (app.documents.length === 0) {
-        alert(translations[initialLang].alert_no_doc);
-        return;
-    }
-
-    var srcDoc = app.activeDocument;
-    var docName = srcDoc.name;
-    var docPgsCount = srcDoc.pages.length;
-
-    // Save original units and ruler settings of source document
-    var savedUnitsH = srcDoc.viewPreferences.horizontalMeasurementUnits;
-    var savedUnitsV = srcDoc.viewPreferences.verticalMeasurementUnits;
-    var savedRuler = srcDoc.viewPreferences.rulerOrigin;
-
-    // Standardize to points internally to read dimensions correctly
-    srcDoc.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.POINTS;
-    srcDoc.viewPreferences.verticalMeasurementUnits = MeasurementUnits.POINTS;
-    srcDoc.viewPreferences.rulerOrigin = RulerOrigin.PAGE_ORIGIN;
-
-    var docWidthPt = srcDoc.documentPreferences.pageWidth;
-    var docHeightPt = srcDoc.documentPreferences.pageHeight;
-
-    // Bleed from source document
-    var docBleedTop = srcDoc.documentPreferences.documentBleedTopOffset;
-    var docBleedBottom = srcDoc.documentPreferences.documentBleedBottomOffset;
-    var docBleedLeft = srcDoc.documentPreferences.documentBleedInsideOrLeftOffset;
-    var docBleedRight = srcDoc.documentPreferences.documentBleedOutsideOrRightOffset;
-
-    // Restore original settings
-    srcDoc.viewPreferences.horizontalMeasurementUnits = savedUnitsH;
-    srcDoc.viewPreferences.verticalMeasurementUnits = savedUnitsV;
-    srcDoc.viewPreferences.rulerOrigin = savedRuler;
-
-    var defaultUnitStr = idUnitsToStringUnits(savedUnitsH) || "mm";
-
-    // Convert page dimensions to target unit for UI
-    var docWidth = convertUnits(docWidthPt, "pt", defaultUnitStr);
-    var docHeight = convertUnits(docHeightPt, "pt", defaultUnitStr);
-    var bleedTop = convertUnits(docBleedTop, "pt", defaultUnitStr);
-    var bleedBottom = convertUnits(docBleedBottom, "pt", defaultUnitStr);
-    var bleedLeft = convertUnits(docBleedLeft, "pt", defaultUnitStr);
-    var bleedRight = convertUnits(docBleedRight, "pt", defaultUnitStr);
+    } catch(e) {}
 
     var scriptFile = new File(app.activeScript);
     var resourcesDir = new Folder(scriptFile.parent + "/RESOURCES");
 
-    // ----------------------------------------------------
-    // LOAD LAST PERSISTED SETTINGS & PRESETS
-    // ----------------------------------------------------
+    // Load persistent settings
     var settingsFile = new File(resourcesDir + "/Data/Settings.txt");
     var lastParams = null;
     if (settingsFile.exists) {
@@ -308,9 +388,208 @@ function runQuickImpose() {
         settingsFile.close();
         try {
             lastParams = eval(content);
-        } catch (e) { }
+        } catch(e) {}
     }
 
+    var secondLang = initialLang;
+    if (lastParams && lastParams.lang) {
+        secondLang = lastParams.lang;
+    }
+
+    var tEn = loadLangTrans("en", resourcesDir);
+    var tSecond = loadLangTrans(secondLang, resourcesDir);
+
+    function bilingualText(strEn, strSecond) {
+        if (!strSecond || secondLang === "en" || strEn === strSecond) {
+            return strEn;
+        }
+        return strEn + " / " + strSecond;
+    }
+
+    function bilingualParens(strEn, strSecond) {
+        if (!strSecond || secondLang === "en" || strEn.toLowerCase() === strSecond.toLowerCase()) {
+            return strEn;
+        }
+        return strEn + " (" + strSecond + ")";
+    }
+
+    function getShort(key, defaultRu, fallbackEn) {
+        if (tSecond && tSecond[key + "_short"]) {
+            return tSecond[key + "_short"];
+        }
+        if (secondLang === "ru") {
+            return defaultRu;
+        }
+        var raw = tSecond ? (tSecond[key] || tSecond["pdf_" + key + "_lbl"] || fallbackEn) : fallbackEn;
+        if (!raw) return fallbackEn;
+        return raw.replace(/:\s*$/, "").replace(/\(mm\)\s*$/i, "").replace(/\(мм\)\s*$/i, "").replace(/мм\s*$/i, "").replace(/\(.*?\)/g, "").replace(/^\s+|\s+$/g, "");
+    }
+
+    // 1. Prompt user to select PDF
+    var filterPattern = (File.fs === "Windows") ? "*.pdf" : function(f) { return (f instanceof Folder) || /\.pdf$/i.test(f.name); };
+    var openDialogTitle = bilingualText(tEn.select_pdf || "Select PDF file for Imposition", tSecond.select_pdf || (secondLang === "ru" ? "Выберите PDF файл для спуска полос" : "Select PDF file"));
+    var selectedPdf = File.openDialog(openDialogTitle, filterPattern);
+    if (!selectedPdf || !selectedPdf.exists) {
+        return;
+    }
+
+    var defaultBleed = 3.0;
+    var askPdfBleed = true;
+    if (lastParams) {
+        if (lastParams.pdfBleed !== undefined) defaultBleed = parseFloat(lastParams.pdfBleed) || 3.0;
+        if (lastParams.askPdfBleed !== undefined) askPdfBleed = !!lastParams.askPdfBleed;
+    }
+
+    // 2. Read PDF size & page count
+    var pdfDim = getPDFSize(selectedPdf);
+    var pdfPageCount = countPDFPages(selectedPdf);
+
+    var chosenBleed = defaultBleed;
+
+    // 3. Bleed setup dialog
+    if (askPdfBleed) {
+        var winTitle = bilingualText("PDF QuickImpose — Bleed Setup", tSecond.bleed_title || "Bleed Setup");
+        var winBleed = new Window("dialog", winTitle);
+        winBleed.orientation = "column";
+        winBleed.alignChildren = ["fill", "top"];
+        winBleed.spacing = 12;
+        winBleed.margins = 16;
+
+        var pnlInfoTitle = bilingualText("PDF Information", tSecond.pnl_pdf_info || "PDF Information");
+        var grpInfo = winBleed.add("panel", undefined, pnlInfoTitle);
+        grpInfo.orientation = "column";
+        grpInfo.alignChildren = "left";
+        grpInfo.spacing = 6;
+        grpInfo.margins = 12;
+
+        var fileLbl = bilingualParens("File", getShort("file", "файл", "file"));
+        grpInfo.add("statictext", undefined, fileLbl + ": " + selectedPdf.name);
+
+        var pgsLbl = bilingualParens("Page count", getShort("pages", "количество страниц", "page count"));
+        grpInfo.add("statictext", undefined, pgsLbl + ": " + pdfPageCount);
+
+        var pdfSizeLbl = bilingualParens("PDF Size", getShort("size", "размер документа", "PDF size"));
+        grpInfo.add("statictext", undefined, pdfSizeLbl + ": " + pdfDim.width.toFixed(1) + " x " + pdfDim.height.toFixed(1) + " mm");
+
+        var pnlBleedTitle = bilingualText("Bleed Settings", tSecond.pnl_bleed_settings || "Bleed Settings");
+        var pnlBleedInput = winBleed.add("panel", undefined, pnlBleedTitle);
+        pnlBleedInput.orientation = "column";
+        pnlBleedInput.alignChildren = "left";
+        pnlBleedInput.spacing = 8;
+        pnlBleedInput.margins = 12;
+
+        var grpInput = pnlBleedInput.add("group");
+        grpInput.orientation = "row";
+        var bleedInputLbl = bilingualParens("PDF bleed", getShort("bleed", "вылеты в документе", "PDF bleed")) + ", mm ";
+        grpInput.add("statictext", undefined, bleedInputLbl);
+        var editBleedVal = grpInput.add("edittext", undefined, String(defaultBleed));
+        editBleedVal.characters = 6;
+
+        var txtTrimCalc = pnlBleedInput.add("statictext", undefined, "");
+        txtTrimCalc.preferredSize.width = 360;
+
+        function updateTrimCalc() {
+            var b = parseFloat(editBleedVal.text) || 0;
+            var trimW = Math.max(0, pdfDim.width - 2 * b);
+            var trimH = Math.max(0, pdfDim.height - 2 * b);
+            var trimCalcLbl = bilingualParens("Trim Size", getShort("trim", "Чистый размер", "trim size"));
+            txtTrimCalc.text = trimCalcLbl + ": " + trimW.toFixed(1) + " x " + trimH.toFixed(1) + " mm";
+        }
+        editBleedVal.onChange = updateTrimCalc;
+        updateTrimCalc();
+
+        var chkAskBleedLbl = bilingualParens("ask bleed every time", getShort("chk_ask_bleed", "всегда спрашивать про вылеты", "ask bleed every time"));
+        var chkAskBleed = winBleed.add("checkbox", undefined, chkAskBleedLbl);
+        chkAskBleed.value = askPdfBleed;
+
+        var grpBtns = winBleed.add("group");
+        grpBtns.alignment = ["right", "center"];
+        var btnCancelLbl = bilingualText("Cancel", tSecond.btn_cancel || "Cancel");
+        var btnNextLbl = bilingualText("Next ->", tSecond.btn_next || "Next ->");
+        var btnCancel = grpBtns.add("button", undefined, btnCancelLbl, {name: "cancel"});
+        var btnNext = grpBtns.add("button", undefined, btnNextLbl, {name: "ok"});
+
+        if (winBleed.show() !== 1) {
+            return;
+        }
+
+        chosenBleed = parseFloat(editBleedVal.text) || 0;
+        askPdfBleed = chkAskBleed.value;
+    }
+
+    var trimW = Math.max(1, pdfDim.width - 2 * chosenBleed);
+    var trimH = Math.max(1, pdfDim.height - 2 * chosenBleed);
+
+    var targetUnitStr = (lastParams && lastParams.unitStr) ? lastParams.unitStr : "mm";
+    var targetUnits = MeasurementUnits.MILLIMETERS;
+    if (targetUnitStr === "pt") targetUnits = MeasurementUnits.POINTS;
+    else if (targetUnitStr === "in") targetUnits = MeasurementUnits.INCHES;
+
+    var docTrimW = convertUnits(trimW, "mm", targetUnitStr);
+    var docTrimH = convertUnits(trimH, "mm", targetUnitStr);
+    var docBleedVal = convertUnits(chosenBleed, "mm", targetUnitStr);
+
+    // 4. Create source document for QuickImpose from PDF
+    var srcDoc = app.documents.add(false);
+    srcDoc.viewPreferences.horizontalMeasurementUnits = targetUnits;
+    srcDoc.viewPreferences.verticalMeasurementUnits = targetUnits;
+    srcDoc.viewPreferences.rulerOrigin = RulerOrigin.PAGE_ORIGIN;
+
+    srcDoc.documentPreferences.pagesPerDocument = pdfPageCount;
+    srcDoc.documentPreferences.pageWidth = docTrimW;
+    srcDoc.documentPreferences.pageHeight = docTrimH;
+    srcDoc.documentPreferences.facingPages = false;
+
+    srcDoc.documentPreferences.documentBleedTopOffset = docBleedVal;
+    srcDoc.documentPreferences.documentBleedBottomOffset = docBleedVal;
+    srcDoc.documentPreferences.documentBleedInsideOrLeftOffset = docBleedVal;
+    srcDoc.documentPreferences.documentBleedOutsideOrRightOffset = docBleedVal;
+
+    app.scriptPreferences.enableRedraw = false;
+    for (var p = 0; p < pdfPageCount; p++) {
+        var page = srcDoc.pages.item(p);
+        page.marginPreferences.top = 0;
+        page.marginPreferences.bottom = 0;
+        page.marginPreferences.left = 0;
+        page.marginPreferences.right = 0;
+
+        var rectBounds = [-docBleedVal, -docBleedVal, docTrimH + docBleedVal, docTrimW + docBleedVal];
+        var frame = page.rectangles.add({
+            geometricBounds: rectBounds,
+            strokeWeight: 0,
+            strokeColor: "None",
+            fillColor: "None"
+        });
+        safePlacePDF(frame, selectedPdf, p + 1);
+        try {
+            frame.fit(FitOptions.CENTER_CONTENT);
+        } catch(e) {}
+    }
+    app.scriptPreferences.enableRedraw = true;
+
+    // Save PDF bleed settings into lastParams
+    if (!lastParams) lastParams = {};
+    lastParams.pdfBleed = chosenBleed;
+    lastParams.askPdfBleed = askPdfBleed;
+
+    // 5. Open QuickImpose UI with srcDoc
+    runQuickImpose(srcDoc, selectedPdf, lastParams, resourcesDir);
+}
+
+function runQuickImpose(srcDoc, selectedPdf, initialLastParams, resourcesDir) {
+    var initialLang = "en";
+    try {
+        if (app.locale == Locale.RUSSIAN_LOCALE) {
+            initialLang = "ru";
+        }
+    } catch(e) {}
+
+    var pdfName = selectedPdf.name;
+    var docName = pdfName;
+    var docPgsCount = srcDoc.pages.length;
+
+    var lastParams = initialLastParams;
+    
     function getInitVal(prop, fallback) {
         if (lastParams && lastParams[prop] !== undefined) {
             return lastParams[prop];
@@ -320,7 +599,25 @@ function runQuickImpose() {
 
     var currentLang = getInitVal("lang", initialLang);
     loadLangTrans(currentLang, resourcesDir);
-    var currentUnit = getInitVal("unitStr", defaultUnitStr);
+    var currentUnit = getInitVal("unitStr", "mm");
+
+    var targetUnits = MeasurementUnits.MILLIMETERS;
+    if (currentUnit === "pt") targetUnits = MeasurementUnits.POINTS;
+    else if (currentUnit === "in") targetUnits = MeasurementUnits.INCHES;
+
+    // Apply target units to source document directly
+    srcDoc.viewPreferences.horizontalMeasurementUnits = targetUnits;
+    srcDoc.viewPreferences.verticalMeasurementUnits = targetUnits;
+    srcDoc.viewPreferences.rulerOrigin = RulerOrigin.PAGE_ORIGIN;
+
+    var docWidth = srcDoc.documentPreferences.pageWidth;
+    var docHeight = srcDoc.documentPreferences.pageHeight;
+    var bleedTop = srcDoc.documentPreferences.documentBleedTopOffset;
+    var bleedBottom = srcDoc.documentPreferences.documentBleedBottomOffset;
+    var bleedLeft = srcDoc.documentPreferences.documentBleedInsideOrLeftOffset;
+    var bleedRight = srcDoc.documentPreferences.documentBleedOutsideOrRightOffset;
+
+    var defaultUnitStr = currentUnit;
 
     var paperSizes = [];
     function loadPaperSizes(unitSystem) {
@@ -329,9 +626,9 @@ function runQuickImpose() {
         var sizes = [];
         var areaLabel = (currentLang === "ru") ? "Область спуска" : "Imposition Area";
         var customLabel = (currentLang === "ru") ? "Вручную" : "Custom";
-
-        sizes.push({ name: areaLabel, w: 0, h: 0 });
-        sizes.push({ name: customLabel, w: -1, h: -1 });
+        
+        sizes.push({name: areaLabel, w: 0, h: 0});
+        sizes.push({name: customLabel, w: -1, h: -1});
 
         if (paperSizesFile.exists) {
             paperSizesFile.encoding = "UTF-8";
@@ -347,29 +644,28 @@ function runQuickImpose() {
                     var w = parseFloat(parts[1]);
                     var h = parseFloat(parts[2]);
                     if (!isNaN(w) && !isNaN(h)) {
-                        sizes.push({ name: name, w: w, h: h });
+                        sizes.push({name: name, w: w, h: h});
                     }
                 }
             }
             paperSizesFile.close();
         } else {
-            // Fallback formats
             var fallbackSizes;
             if (unitSystem === "in") {
                 fallbackSizes = [
-                    { name: "Tabloid Extra (13x19)", w: 13, h: 19 },
-                    { name: "Digital Press (12x18)", w: 12, h: 18 },
-                    { name: "Tabloid (11x17)", w: 11, h: 17 },
-                    { name: "Letter (8.5x11)", w: 8.5, h: 11 }
+                    {name: "Tabloid Extra (13x19)", w: 13, h: 19},
+                    {name: "Digital Press (12x18)", w: 12, h: 18},
+                    {name: "Tabloid (11x17)", w: 11, h: 17},
+                    {name: "Letter (8.5x11)", w: 8.5, h: 11}
                 ];
             } else {
                 fallbackSizes = [
-                    { name: "SRA3 (320x450)", w: 320, h: 450 },
-                    { name: "SRA3+ (320x460)", w: 320, h: 460 },
-                    { name: "SRA3++ (320x464)", w: 320, h: 464 },
-                    { name: "SRA2 (450x640)", w: 450, h: 640 },
-                    { name: "A3 (297x420)", w: 297, h: 420 },
-                    { name: "A4 (210x297)", w: 210, h: 297 }
+                    {name: "SRA3 (320x450)", w: 320, h: 450},
+                    {name: "SRA3+ (320x460)", w: 320, h: 460},
+                    {name: "SRA3++ (320x464)", w: 320, h: 464},
+                    {name: "SRA2 (450x640)", w: 450, h: 640},
+                    {name: "A3 (297x420)", w: 297, h: 420},
+                    {name: "A4 (210x297)", w: 210, h: 297}
                 ];
             }
             for (var k = 0; k < fallbackSizes.length; k++) {
@@ -380,7 +676,7 @@ function runQuickImpose() {
     }
 
     paperSizes = loadPaperSizes(currentUnit === "in" ? "in" : "mm");
-
+    
     var paperNames = [];
     for (var i = 0; i < paperSizes.length; i++) {
         paperNames.push(paperSizes[i].name);
@@ -388,12 +684,12 @@ function runQuickImpose() {
 
     var paperWeightNames = [];
     var paperWeightThicknesses = [];
-
+    
     function loadPaperWeights() {
         var paperWeightsFile = new File(resourcesDir + "/Data/PaperWeights.txt");
         var names = [];
         var thicknesses = [];
-
+        
         if (paperWeightsFile.exists) {
             paperWeightsFile.encoding = "UTF-8";
             paperWeightsFile.open("r");
@@ -414,8 +710,7 @@ function runQuickImpose() {
             }
             paperWeightsFile.close();
         }
-
-        // Fallbacks if empty or file doesn't exist
+        
         if (names.length === 0) {
             var fallbacks = (currentLang === "ru") ? [
                 { name: "300 гр. (0.35 мм)", t: 0.35 },
@@ -456,7 +751,7 @@ function runQuickImpose() {
         var rawName = file.name.replace(/\.[a-zA-Z0-9]+$/, "");
         try {
             return decodeURI(rawName);
-        } catch (e) {
+        } catch(e) {
             return rawName;
         }
     }
@@ -474,12 +769,12 @@ function runQuickImpose() {
         var folderName = exampleFolderNames[impIdx] || "SaddleStitch";
         var t = translations[currentLang] || translations["en"];
         var targetSize = 550;
-
+        
         var folder = new Folder(resourcesDir + "/Example/" + folderName);
         if (!folder.exists) {
             folder = new Folder(resourcesDir + "/Example_Preview/" + folderName);
         }
-
+        
         var rawFiles = folder.exists ? folder.getFiles() : null;
         var files = [];
         if (rawFiles) {
@@ -490,7 +785,7 @@ function runQuickImpose() {
                 }
             }
         }
-
+        
         if (!files || files.length === 0) {
             var origFolder = new Folder(resourcesDir + "/Example/" + folderName);
             var oFiles = origFolder.exists ? origFolder.getFiles() : null;
@@ -502,7 +797,7 @@ function runQuickImpose() {
                 }
             }
         }
-
+        
         if (!files || files.length === 0) {
             for (var k = 0; k < exampleFolderNames.length; k++) {
                 if (k === impIdx) continue;
@@ -522,63 +817,63 @@ function runQuickImpose() {
             alert((t.alert_no_example || "No example images found in folder:\n") + folder.fsName);
             return;
         }
-
-        files.sort(function (a, b) {
+        
+        files.sort(function(a, b) {
             return a.name.localeCompare(b.name);
         });
-
+        
         var currentImgIdx = 0;
         var impTypeName = (t.imp_types && t.imp_types[impIdx]) ? t.imp_types[impIdx] : folderName;
-
+        
         var dlg = new Window("dialog", (t.title_example || "Example") + " — " + impTypeName);
         dlg.orientation = "column";
         dlg.alignChildren = ["center", "top"];
         dlg.spacing = 10;
-
+        
         var lblCounter = dlg.add("statictext", undefined, "");
         lblCounter.alignment = ["center", "center"];
-
+        
         var imgGroup = dlg.add("group");
         imgGroup.alignment = ["center", "center"];
-
+        
         var imgCtrl = imgGroup.add("image", undefined, files[0]);
         imgCtrl.preferredSize = [targetSize, targetSize];
-
+        
         var ctrlGroup = dlg.add("group");
         ctrlGroup.orientation = "row";
         ctrlGroup.alignChildren = ["center", "center"];
         ctrlGroup.spacing = 15;
-
+        
         var btnPrev = ctrlGroup.add("button", undefined, "◀");
         btnPrev.preferredSize = [50, 30];
-
+        
         var btnNext = ctrlGroup.add("button", undefined, "▶");
         btnNext.preferredSize = [50, 30];
-
+        
         var btnClose = ctrlGroup.add("button", undefined, t.btn_close || "Close");
         btnClose.preferredSize = [100, 30];
-
+        
         function updateDisplay() {
             var f = files[currentImgIdx];
             imgCtrl.image = f;
             var cleanName = getCleanPresetName ? getCleanPresetName(f) : f.name;
             lblCounter.text = (currentImgIdx + 1) + " / " + files.length + " (" + cleanName + ")";
         }
-
-        btnPrev.onClick = function () {
+        
+        btnPrev.onClick = function() {
             currentImgIdx = (currentImgIdx - 1 + files.length) % files.length;
             updateDisplay();
         };
-
-        btnNext.onClick = function () {
+        
+        btnNext.onClick = function() {
             currentImgIdx = (currentImgIdx + 1) % files.length;
             updateDisplay();
         };
-
-        btnClose.onClick = function () {
+        
+        btnClose.onClick = function() {
             dlg.close();
         };
-
+        
         updateDisplay();
         dlg.show();
     }
@@ -892,8 +1187,6 @@ function runQuickImpose() {
             var cellBrush = g.newBrush(g.BrushType.SOLID_COLOR, [0.90, 0.94, 1.0, 0.7]);
             var emptyCellBrush = g.newBrush(g.BrushType.SOLID_COLOR, [0.95, 0.95, 0.95, 0.4]);
             var cellPen = g.newPen(g.PenType.SOLID_COLOR, [0.25, 0.5, 0.85, 1], 1);
-            var textPen = g.newPen(g.PenType.SOLID_COLOR, [0.1, 0.35, 0.75, 1], 1);
-            var rotTextPen = g.newPen(g.PenType.SOLID_COLOR, [0.85, 0.25, 0.05, 1], 1);
             var emptyTextPen = g.newPen(g.PenType.SOLID_COLOR, [0.65, 0.65, 0.65, 1], 1);
 
             var textPen = g.newPen(g.PenType.SOLID_COLOR, [0.05, 0.05, 0.05, 1], 1);
@@ -1083,30 +1376,28 @@ function runQuickImpose() {
     // ----------------------------------------------------
     uiLabels = {};
 
-    var win = new Window("dialog", translations[currentLang].title);
+    var win = new Window("dialog", translations[currentLang].title || "PDF QuickImpose — Imposition");
     win.alignChildren = "fill";
-
-    // Header Group (Document Info, Language)
+    
     var headerGroup = win.add("group");
     headerGroup.orientation = "row";
     headerGroup.alignChildren = ["fill", "center"];
-
+    
     var infoText = translations[currentLang].file + docName + " (" + docPgsCount + translations[currentLang].pages + ")   |   " + translations[currentLang].size + docWidth.toFixed(1) + " x " + docHeight.toFixed(1) + " " + defaultUnitStr + " (" + translations[currentLang].bleeds + bleedLeft.toFixed(1) + ")";
     var txtDocInfo = headerGroup.add("statictext", undefined, infoText);
     txtDocInfo.alignment = ["left", "center"];
-
-    // Language selection
+    
     var grpLang = headerGroup.add("group");
     grpLang.alignment = ["right", "center"];
     uiLabels.lblLang = grpLang.add("statictext", undefined, translations[currentLang].lbl_lang);
-
+    
     var langDropdownNames = [];
     for (var l = 0; l < langList.length; l++) {
         langDropdownNames.push(langList[l].name);
     }
     var langDropdown = grpLang.add("dropdownlist", undefined, langDropdownNames);
-
-    var defaultLangIdx = 1; // English default
+    
+    var defaultLangIdx = 1;
     for (var l = 0; l < langList.length; l++) {
         if (langList[l].code === currentLang) {
             defaultLangIdx = l;
@@ -1115,7 +1406,6 @@ function runQuickImpose() {
     }
     langDropdown.selection = defaultLangIdx;
 
-    // Main Columns Layout
     var mainGroup = win.add("group");
     mainGroup.orientation = "row";
     mainGroup.alignChildren = ["fill", "top"];
@@ -1354,7 +1644,7 @@ function runQuickImpose() {
         var impIdx = (typeof impTypeDropdown !== "undefined" && impTypeDropdown.selection) ? impTypeDropdown.selection.index : 0;
         var sheetsPerSig = (typeof editSheetsPerSig !== "undefined") ? (parseInt(editSheetsPerSig.text, 10) || 0) : 0;
 
-        if (impIdx === 0 || impIdx === 1) { // Saddle Stitch or Perfect Bound
+        if (impIdx === 0 || impIdx === 1) {
             activeSequence = generateSaddleStitchSequence(totalPgs, sheetsPerSig);
         } else if (impIdx === 2) {
             activeSequence = generateConsecutiveSequence(totalPgs, cols, rows);
@@ -1489,7 +1779,7 @@ function runQuickImpose() {
         var selIdx = impTypeDropdown.selection ? impTypeDropdown.selection.index : 0;
         showExampleDialog(selIdx);
     };
-
+    
     var grpUnits = pnlTypeUnits.add("group");
     grpUnits.spacing = 5;
     uiLabels.units = grpUnits.add("statictext", undefined, translations[currentLang].lbl_units);
@@ -1498,28 +1788,28 @@ function runQuickImpose() {
     unitsDropdown.preferredSize.width = 50;
     var defaultUnitsIndex = (currentUnit === "pt" ? 1 : (currentUnit === "in" ? 2 : 0));
     unitsDropdown.selection = defaultUnitsIndex;
-
+    
     var chkRotateBacks = grpUnits.add("checkbox", undefined, translations[currentLang].chk_rotate_backs);
     chkRotateBacks.preferredSize.width = 146;
     chkRotateBacks.value = false;
-
+    
     var chkInfoSlug = grpUnits.add("checkbox", undefined, translations[currentLang].chk_info_slug);
     chkInfoSlug.preferredSize.width = 60;
     chkInfoSlug.value = true;
     chkInfoSlug.helpTip = translations[currentLang].tip_info_slug;
-
+    
     var editSlugFontSize = grpUnits.add("edittext", undefined, "7");
     editSlugFontSize.preferredSize.width = 22;
     editSlugFontSize.helpTip = translations[currentLang].tip_slug_font_size;
-
+    
     var pnlGrid = leftCol.add("panel", undefined, "Grid Parameters / Параметры сетки спуска                                ");
     pnlGrid.alignChildren = "left";
-
+    
     var editCols = addLabelAndEdit(pnlGrid, translations[currentLang].lbl_cols, "2", 5, "cols");
     var editRows = addLabelAndEdit(pnlGrid, translations[currentLang].lbl_rows, "1", 5, "rows");
     editCols.enabled = false;
     editRows.enabled = false;
-
+    
     var pnlMargins = leftCol.add("panel", undefined, "Margins of Imposition Area / Поля области спуска                        ");
     pnlMargins.alignChildren = "fill";
     var grpMarg1 = pnlMargins.add("group");
@@ -1528,14 +1818,13 @@ function runQuickImpose() {
     var grpMarg2 = pnlMargins.add("group");
     var editMarginRight = addLabelAndEditInline(grpMarg2, translations[currentLang].lbl_margin_right, bleedRight.toFixed(1), 5, "marginRight");
     var editMarginBottom = addLabelAndEditInline(grpMarg2, translations[currentLang].lbl_margin_bottom, bleedBottom.toFixed(1), 5, "marginBottom");
-
+    
     var pnlSpacing = leftCol.add("panel", undefined, "Spacings (Gaps) / Зазоры и распорки                                     ");
     pnlSpacing.alignChildren = "fill";
     var grpSpc = pnlSpacing.add("group");
     var editSpacingHoriz = addLabelAndEditInline(grpSpc, translations[currentLang].lbl_spacing_horiz, "0.0", 5, "spacingHoriz");
     var editSpacingVert = addLabelAndEditInline(grpSpc, translations[currentLang].lbl_spacing_vert, "0.0", 5, "spacingVert");
-
-    // Imposition Area size
+    
     var pnlImpArea = leftCol.add("panel", undefined, "Imposition Area Size / Размер области спуска                           ");
     pnlImpArea.alignChildren = "fill";
     var grpImpArea = pnlImpArea.add("group");
@@ -1543,7 +1832,7 @@ function runQuickImpose() {
     var editImpAreaHeight = addLabelAndEditInline(grpImpArea, translations[currentLang].lbl_imp_height, "0", 5, "impAreaHeight");
     editImpAreaWidth.enabled = false;
     editImpAreaHeight.enabled = false;
-
+    
     var grpResetTrim = pnlImpArea.add("group");
     grpResetTrim.orientation = "column";
     grpResetTrim.alignChildren = "left";
@@ -1553,22 +1842,21 @@ function runQuickImpose() {
     var lblResetInfo = grpResetTrim.add("statictext", undefined, "");
     lblResetInfo.characters = 25;
     chkResetTrimBleed.onClick = updateSheetSize;
-
-    // Target sheet size
+    
     var pnlSheet = leftCol.add("panel", undefined, "Print Sheet Size / Размер печатного листа                             ");
     pnlSheet.alignChildren = "fill";
-
+    
     var grpSheetDropdown = pnlSheet.add("group");
     grpSheetDropdown.spacing = 5;
     uiLabels.sheetFormat = grpSheetDropdown.add("statictext", undefined, translations[currentLang].lbl_sheet_format);
     var sheetDropdown = grpSheetDropdown.add("dropdownlist", undefined, paperNames);
     sheetDropdown.selection = 0;
     sheetDropdown.preferredSize.width = 152;
-
-    var btnEditPaperSizes = grpSheetDropdown.add("button", undefined, "\uD83D\uDCC4"); // 📄 icon
+    
+    var btnEditPaperSizes = grpSheetDropdown.add("button", undefined, "\uD83D\uDCC4");
     btnEditPaperSizes.preferredSize = [22, 22];
     btnEditPaperSizes.helpTip = "Редактировать список форматов бумаги";
-    btnEditPaperSizes.onClick = function () {
+    btnEditPaperSizes.onClick = function() {
         var filename = (unitsDropdown.selection.text === "in") ? "PaperSizes_in.txt" : "PaperSizes.txt";
         var paperSizesFile = new File(resourcesDir + "/Data/" + filename);
         if (paperSizesFile.exists) {
@@ -1577,13 +1865,13 @@ function runQuickImpose() {
             alert(translations[currentLang].alert_file_not_found + paperSizesFile.fsName);
         }
     };
-
+    
     uiLabels.sheetOrient = grpSheetDropdown.add("statictext", undefined, translations[currentLang].lbl_sheet_orient);
     var orientationDropdown = grpSheetDropdown.add("dropdownlist", undefined, [translations[currentLang].orient_horiz, translations[currentLang].orient_vert]);
     orientationDropdown.selection = 0;
     orientationDropdown.preferredSize.width = 72;
     orientationDropdown.enabled = false;
-
+    
     var grpSheetCustom = pnlSheet.add("group");
     var editSheetWidth = addLabelAndEditInline(grpSheetCustom, translations[currentLang].lbl_sheet_width, "0", 5, "sheetWidth");
     var editSheetHeight = addLabelAndEditInline(grpSheetCustom, translations[currentLang].lbl_sheet_height, "0", 5, "sheetHeight");
@@ -1591,13 +1879,12 @@ function runQuickImpose() {
     editSheetHeight.enabled = false;
 
     // --- RIGHT COLUMN PANELS ---
-    // Presets Panel
     var pnlPresets = rightCol.add("panel", undefined, "Settings & Presets / Настройки и пресеты                                ");
     pnlPresets.alignChildren = "fill";
-
+    
     var chkLoadLast = pnlPresets.add("checkbox", undefined, translations[currentLang].chk_load_last);
     chkLoadLast.value = true;
-
+    
     var grpSavePreset = pnlPresets.add("group");
     uiLabels.savePreset = grpSavePreset.add("statictext", undefined, translations[currentLang].lbl_preset_save);
     uiLabels.savePreset.characters = 8;
@@ -1605,7 +1892,7 @@ function runQuickImpose() {
     editSaveName.preferredSize.width = 130;
     var btnSavePreset = grpSavePreset.add("button", undefined, translations[currentLang].btn_preset_save);
     btnSavePreset.preferredSize.width = 80;
-
+    
     var grpLoadPreset = pnlPresets.add("group");
     uiLabels.loadPreset = grpLoadPreset.add("statictext", undefined, translations[currentLang].lbl_preset_load);
     uiLabels.loadPreset.characters = 8;
@@ -1618,13 +1905,12 @@ function runQuickImpose() {
     btnDeletePreset.preferredSize = [26, 24];
     btnDeletePreset.helpTip = translations[currentLang].tip_preset_delete || "Удалить выбранный пресет";
 
-    // Creep Panel
     var pnlCreep = rightCol.add("panel", undefined, "Creep Shift / Сползание фальцовки                                      ");
     pnlCreep.alignChildren = "fill";
-
+    
     var chkEnableCreep = pnlCreep.add("checkbox", undefined, translations[currentLang].chk_enable_creep);
     chkEnableCreep.value = true;
-
+    
     var grpCompensate = pnlCreep.add("group");
     grpCompensate.orientation = "row";
     var chkCompensateThickness = grpCompensate.add("checkbox", undefined, translations[currentLang].chk_compensate_thickness || "Thickness Compensation");
@@ -1632,29 +1918,29 @@ function runQuickImpose() {
     var editCompensateCoeff = grpCompensate.add("edittext", undefined, "1.0");
     editCompensateCoeff.preferredSize.width = 35;
     editCompensateCoeff.helpTip = translations[currentLang].tip_compensate_thickness || "Thickness compensation coefficient (K)";
-
+    
     var editSheetsPerSig = addLabelAndEdit(pnlCreep, translations[currentLang].lbl_sheets_per_sig, "0", 5, "sheetsPerSig");
-
+    
     var grpCover = pnlCreep.add("group");
     grpCover.orientation = "row";
     uiLabels.lblCover = grpCover.add("statictext", undefined, translations[currentLang].lbl_cover);
     uiLabels.lblCover.characters = 12;
     var coverDropdown = grpCover.add("dropdownlist", undefined, paperWeightNames);
-    coverDropdown.selection = 0; // 300 g default
+    coverDropdown.selection = 0;
     coverDropdown.preferredSize.width = 150;
-
+    
     var grpBlock = pnlCreep.add("group");
     grpBlock.orientation = "row";
     uiLabels.lblBlock = grpBlock.add("statictext", undefined, translations[currentLang].lbl_block);
     uiLabels.lblBlock.characters = 12;
     var blockDropdown = grpBlock.add("dropdownlist", undefined, paperWeightNames);
-    blockDropdown.selection = 1; // 200 g default
+    blockDropdown.selection = 1;
     blockDropdown.preferredSize.width = 150;
-
-    var btnEditPaperWeights = grpBlock.add("button", undefined, "\uD83D\uDCC4"); // 📄 icon
+    
+    var btnEditPaperWeights = grpBlock.add("button", undefined, "\uD83D\uDCC4");
     btnEditPaperWeights.preferredSize = [22, 22];
     btnEditPaperWeights.helpTip = "Редактировать список плотностей бумаги";
-    btnEditPaperWeights.onClick = function () {
+    btnEditPaperWeights.onClick = function() {
         var paperWeightsFile = new File(resourcesDir + "/Data/PaperWeights.txt");
         if (paperWeightsFile.exists) {
             paperWeightsFile.execute();
@@ -1662,59 +1948,74 @@ function runQuickImpose() {
             alert(translations[currentLang].alert_file_not_found + paperWeightsFile.fsName);
         }
     };
-
+    
     var grpCreepDir = pnlCreep.add("group");
     grpCreepDir.orientation = "row";
     uiLabels.lblCreepDir = grpCreepDir.add("statictext", undefined, translations[currentLang].lbl_creep_dir);
     uiLabels.lblCreepDir.characters = 12;
     var creepDirDropdown = grpCreepDir.add("dropdownlist", undefined, translations[currentLang].creep_dir_options);
-    creepDirDropdown.selection = 0; // Inwards default
+    creepDirDropdown.selection = 0;
     creepDirDropdown.preferredSize.width = 150;
-
+    
     var grpCreepVals = pnlCreep.add("group");
     var editCreepOuter = addLabelAndEditInline(grpCreepVals, translations[currentLang].lbl_creep_outer, "0.0", 5, "creepOuter");
     var editCreepInner = addLabelAndEditInline(grpCreepVals, translations[currentLang].lbl_creep_inner, "0.6", 5, "creepInner");
-
-    // Bleed Panel
+    
     var pnlBleedOpts = rightCol.add("panel", undefined, "Bleed Options / Параметры вылетов                                      ");
     pnlBleedOpts.alignChildren = "fill";
     var chkUseBleed = pnlBleedOpts.add("checkbox", undefined, translations[currentLang].chk_use_bleed);
     chkUseBleed.value = true;
-
+    
     var grpBleeds = pnlBleedOpts.add("group");
     var editBleedVal = addLabelAndEditInline(grpBleeds, translations[currentLang].lbl_custom_bleed, bleedLeft.toFixed(1), 5, "customBleed");
     editBleedVal.enabled = false;
 
-    chkUseBleed.onClick = function () {
+    function syncMarginsWithDocBleed() {
+        if (!chkUseBleed || !chkUseBleed.value) return;
+        var activeUnit = (unitsDropdown && unitsDropdown.selection) ? unitsDropdown.selection.text : currentUnit;
+        var bL = convertUnits(bleedLeft, currentUnit, activeUnit);
+        var bT = convertUnits(bleedTop, currentUnit, activeUnit);
+        var bR = convertUnits(bleedRight, currentUnit, activeUnit);
+        var bB = convertUnits(bleedBottom, currentUnit, activeUnit);
+        
+        var decimals = getDecimalsForUnit(activeUnit);
+        editMarginLeft.text = bL.toFixed(decimals);
+        editMarginTop.text = bT.toFixed(decimals);
+        editMarginRight.text = bR.toFixed(decimals);
+        editMarginBottom.text = bB.toFixed(decimals);
+    }
+    
+    chkUseBleed.onClick = function() {
         editBleedVal.enabled = !chkUseBleed.value;
+        if (chkUseBleed.value) {
+            syncMarginsWithDocBleed();
+        }
         updateSheetSize();
     };
     editBleedVal.onChange = updateSheetSize;
-
-    // Crop Marks Panel
+    
     var pnlMarks = rightCol.add("panel", undefined, "Crop Marks / Метки реза                                               ");
     pnlMarks.alignChildren = "fill";
     var chkMarksOn = pnlMarks.add("checkbox", undefined, translations[currentLang].chk_marks_on);
     chkMarksOn.value = true;
-
+    
     var chkDrawCenterMark = pnlMarks.add("checkbox", undefined, translations[currentLang].chk_center_mark || "Center (fold line)");
     chkDrawCenterMark.value = false;
-
+    
     var grpMarks = pnlMarks.add("group");
     var editMarkLength = addLabelAndEditInline(grpMarks, translations[currentLang].lbl_mark_length, "3.0", 5, "markLength");
     var editMarkOffset = addLabelAndEditInline(grpMarks, translations[currentLang].lbl_mark_offset, "3.0", 5, "markOffset");
     editMarkLength.enabled = true;
     editMarkOffset.enabled = true;
     chkDrawCenterMark.enabled = true;
-
-    chkMarksOn.onClick = function () {
+    
+    chkMarksOn.onClick = function() {
         var state = chkMarksOn.value;
         editMarkLength.enabled = state;
         editMarkOffset.enabled = state;
         chkDrawCenterMark.enabled = state;
     };
 
-    // Hyperlink helper
     function openURL(url) {
         try {
             var tempFile = new File(Folder.temp + "/imposition_redirect.html");
@@ -1722,14 +2023,14 @@ function runQuickImpose() {
             tempFile.write('<html><head><title>Redirecting...</title><script>window.location.replace("' + url + '");</script></head><body></body></html>');
             tempFile.close();
             tempFile.execute();
-        } catch (e) { }
+        } catch(e) {}
     }
-
+    
     function makeHyperlink(parent, labelText, url) {
         var link = parent.add("statictext", undefined, labelText);
         link.preferredSize.height = 16;
         link.justify = "left";
-        link.onDraw = function () {
+        link.onDraw = function() {
             var g = this.graphics;
             var textPen = g.newPen(g.PenType.SOLID_COLOR, [0.75, 0.745, 0.75, 1], 1);
             var h = this.size.height || this.size[1];
@@ -1737,34 +2038,33 @@ function runQuickImpose() {
             var y = Math.max(0, (h - textDim.height) / 2);
             g.drawString(this.text, textPen, 0, y, g.font);
         };
-        link.addEventListener("click", function () {
+        link.addEventListener("click", function() {
             openURL(url);
         });
         return link;
     }
-
-    // Bottom Footer Group (Links on the left, Buttons on the right)
+    
     var footerGroup = win.add("group");
     footerGroup.orientation = "row";
     footerGroup.alignment = ["fill", "bottom"];
     footerGroup.alignChildren = ["fill", "bottom"];
-
+    
     var leftFooter = footerGroup.add("group");
     leftFooter.orientation = "column";
     leftFooter.alignment = ["left", "bottom"];
     leftFooter.alignChildren = ["left", "bottom"];
     leftFooter.spacing = 6;
-
+    
     uiLabels.lblAuthorLink = makeHyperlink(leftFooter, translations[currentLang].lbl_author_link, "https://github.com/SaidAuita/QuickImpose-InDesign");
     uiLabels.lblMoreScripts = makeHyperlink(leftFooter, translations[currentLang].lbl_more_scripts, "http://ph-cu-s.com/tools");
-
+    
     var rightFooter = footerGroup.add("group");
     rightFooter.alignment = ["right", "bottom"];
     rightFooter.spacing = 10;
-
-    var btnCancel = rightFooter.add("button", undefined, translations[currentLang].btn_cancel, { name: "cancel" });
-    var btnImpose = rightFooter.add("button", undefined, translations[currentLang].btn_impose, { name: "ok" });
-
+    
+    var btnCancel = rightFooter.add("button", undefined, translations[currentLang].btn_cancel, {name: "cancel"});
+    var btnImpose = rightFooter.add("button", undefined, translations[currentLang].btn_impose, {name: "ok"});
+    
     // --- REACTIVE EVENTS & SHEET CALCULATION ---
     function updateSheetSize() {
         var cols = parseInt(editCols.text, 10) || 1;
@@ -1777,15 +2077,14 @@ function runQuickImpose() {
         var mBottom = parseFloat(editMarginBottom.text) || 0;
         var sHoriz = parseFloat(editSpacingHoriz.text) || 0;
         var sVert = parseFloat(editSpacingVert.text) || 0;
-
-        // Calculate bleed values in active unit
+        
         var bL = 0, bR = 0, bT = 0, bB = 0;
         if (chkUseBleed.value) {
-            var activeUnit = unitsDropdown.selection.text;
-            bL = convertUnits(docBleedLeft, "pt", activeUnit);
-            bR = convertUnits(docBleedRight, "pt", activeUnit);
-            bT = convertUnits(docBleedTop, "pt", activeUnit);
-            bB = convertUnits(docBleedBottom, "pt", activeUnit);
+            var activeUnit = (unitsDropdown && unitsDropdown.selection) ? unitsDropdown.selection.text : currentUnit;
+            bL = convertUnits(bleedLeft, currentUnit, activeUnit);
+            bR = convertUnits(bleedRight, currentUnit, activeUnit);
+            bT = convertUnits(bleedTop, currentUnit, activeUnit);
+            bB = convertUnits(bleedBottom, currentUnit, activeUnit);
         } else {
             var val = parseFloat(editBleedVal.text) || 0;
             bL = val;
@@ -1793,8 +2092,7 @@ function runQuickImpose() {
             bT = val;
             bB = val;
         }
-
-        // For non-booklet modes, we add bleed to the spacing dynamically
+        
         var impTypeIdx = impTypeDropdown.selection ? impTypeDropdown.selection.index : 0;
         var actualSHoriz = sHoriz;
         var actualSVert = sVert;
@@ -1802,32 +2100,30 @@ function runQuickImpose() {
             actualSHoriz += (bL + bR);
             actualSVert += (bT + bB);
         }
-
+        
         var impW = mLeft + mRight + cols * w + (cols - 1) * actualSHoriz;
         var impH = mTop + mBottom + rows * h + (rows - 1) * actualSVert;
-
+        
         editImpAreaWidth.text = impW.toFixed(2);
         editImpAreaHeight.text = impH.toFixed(2);
-
-        // Update Sheet size if "Область спуска" is active
+        
         if (sheetDropdown.selection && sheetDropdown.selection.index === 0) {
             editSheetWidth.text = impW.toFixed(2);
             editSheetHeight.text = impH.toFixed(2);
         }
-
-        // Update Reset Trim + Bleed preview text
+        
         if (typeof chkResetTrimBleed !== "undefined" && typeof lblResetInfo !== "undefined") {
             var trimW = impW - (bL + bR);
             var trimH = impH - (bT + bB);
             var bleedX = bL + bR;
             var bleedY = bT + bB;
-
+            
             var resetLabelText = (currentLang === "ru") ? "Сброс: " : "Reset: ";
             lblResetInfo.text = resetLabelText + trimW.toFixed(1) + "+" + bleedX.toFixed(1) + " / " + trimH.toFixed(1) + "+" + bleedY.toFixed(1);
         }
         updateNav();
     }
-
+    
     function getBlockLabelText(count, lang) {
         if (lang === "ru") {
             var word = "листов";
@@ -1858,17 +2154,16 @@ function runQuickImpose() {
         var selIdx = impTypeDropdown.selection ? impTypeDropdown.selection.index : 0;
         var isSaddleStitch = (selIdx === 0);
         var isPerfectBound = (selIdx === 1);
-
+        
         chkEnableCreep.enabled = isSaddleStitch;
-
+        
         var state = isSaddleStitch && chkEnableCreep.value;
-
-        // Sheets per signature is enabled for Saddle Stitch (if creep checked) OR Perfect Bound (always)
+        
         editSheetsPerSig.enabled = state || isPerfectBound;
         if (uiLabels.lblSheetsPerSig) {
             uiLabels.lblSheetsPerSig.enabled = state || isPerfectBound;
         }
-
+        
         coverDropdown.enabled = state;
         blockDropdown.enabled = state;
         creepDirDropdown.enabled = state;
@@ -1877,7 +2172,7 @@ function runQuickImpose() {
         editCompensateCoeff.enabled = state && chkCompensateThickness.value;
         editCreepOuter.enabled = state;
         editCreepInner.enabled = state;
-
+        
         if (state) {
             updateCreepValues();
         } else {
@@ -1885,7 +2180,7 @@ function runQuickImpose() {
             editCreepInner.text = "0.0";
         }
     }
-
+    
     function toggleResetTrimBleed() {
         var isSaddleStitch = (impTypeDropdown.selection && impTypeDropdown.selection.index === 0);
         chkResetTrimBleed.enabled = isSaddleStitch;
@@ -1904,24 +2199,24 @@ function runQuickImpose() {
             return;
         }
         if (!coverDropdown.selection || !blockDropdown.selection || !creepDirDropdown.selection) return;
-
+        
         var tCover = paperWeightThicknesses[coverDropdown.selection.index];
         var tBlock = paperWeightThicknesses[blockDropdown.selection.index];
         var isInwards = (creepDirDropdown.selection.index === 0);
-
+        
         var paddedPages = Math.ceil(docPgsCount / 4) * 4;
         var sheetsPerSigVal = parseInt(editSheetsPerSig.text, 10) || 0;
         var N = (sheetsPerSigVal > 0) ? sheetsPerSigVal : (paddedPages / 4);
-
+        
         var creepVal = 0;
         if (N > 1) {
             creepVal = tCover + (N - 1) * tBlock;
         }
-
+        
         var activeUnit = unitsDropdown.selection.text;
         var convertedCreep = convertUnits(creepVal, "mm", activeUnit);
         var decimals = getDecimalsForUnit(activeUnit);
-
+        
         if (isInwards) {
             if (chkCompensateThickness.value) {
                 var K = parseFloat(editCompensateCoeff.text);
@@ -1946,15 +2241,14 @@ function runQuickImpose() {
             }
         }
     }
-
-    // Hook layout changes
+    
     var list = [editCols, editRows, editMarginLeft, editMarginTop, editMarginRight, editMarginBottom, editSpacingHoriz, editSpacingVert];
     for (var j = 0; j < list.length; j++) {
         list[j].onChange = updateSheetSize;
     }
-
+    
     chkEnableCreep.onClick = toggleCreepPanel;
-    chkCompensateThickness.onClick = function () {
+    chkCompensateThickness.onClick = function() {
         editCompensateCoeff.enabled = chkEnableCreep.value && chkCompensateThickness.value;
         updateCreepValues();
     };
@@ -1962,40 +2256,38 @@ function runQuickImpose() {
     coverDropdown.onChange = updateCreepValues;
     blockDropdown.onChange = updateCreepValues;
     creepDirDropdown.onChange = updateCreepValues;
-    editSheetsPerSig.onChange = function () {
+    editSheetsPerSig.onChange = function() {
         updateCreepValues();
         updateSheetSize();
     };
-
+    
     function updateFinalSheetSizeFromSelection() {
         if (!sheetDropdown.selection) return;
         var idx = sheetDropdown.selection.index;
         var paper = paperSizes[idx];
-
-        if (paper.w === 0) { // "Область спуска" / "Imposition Area"
+        
+        if (paper.w === 0) {
             editSheetWidth.text = editImpAreaWidth.text;
             editSheetHeight.text = editImpAreaHeight.text;
             editSheetWidth.enabled = false;
             editSheetHeight.enabled = false;
             orientationDropdown.enabled = false;
-        } else if (paper.w === -1) { // "Вручную" / "Custom"
+        } else if (paper.w === -1) {
             editSheetWidth.enabled = true;
             editSheetHeight.enabled = true;
             orientationDropdown.enabled = true;
-        } else { // Standard format loaded from file
+        } else {
             orientationDropdown.enabled = true;
             var currentUnit = unitsDropdown.selection.text;
-
-            // Note: sizes in PaperSizes.txt are in mm, while in PaperSizes_in.txt they are in inches.
+            
             var fileUnit = (currentUnit === "in") ? "in" : "mm";
             var wConverted = convertUnits(paper.w, fileUnit, currentUnit);
             var hConverted = convertUnits(paper.h, fileUnit, currentUnit);
-
-            // Swap if Horizontal (first is wide side) or Vertical (first is narrow side)
+            
             var isHoriz = (orientationDropdown.selection.index === 0);
             var finalW = isHoriz ? Math.max(wConverted, hConverted) : Math.min(wConverted, hConverted);
             var finalH = isHoriz ? Math.min(wConverted, hConverted) : Math.max(wConverted, hConverted);
-
+            
             editSheetWidth.text = finalW.toFixed(2);
             editSheetHeight.text = finalH.toFixed(2);
             editSheetWidth.enabled = false;
@@ -2003,13 +2295,12 @@ function runQuickImpose() {
         }
         updateNav();
     }
-
+    
     sheetDropdown.onChange = updateFinalSheetSizeFromSelection;
-    orientationDropdown.onChange = function () {
+    orientationDropdown.onChange = function() {
         var idx = sheetDropdown.selection.index;
         var paper = paperSizes[idx];
         if (paper.w === -1) {
-            // Swap custom width and height if needed based on orientation toggle
             var w = parseFloat(editSheetWidth.text) || 0;
             var h = parseFloat(editSheetHeight.text) || 0;
             var isHoriz = (orientationDropdown.selection.index === 0);
@@ -2028,17 +2319,15 @@ function runQuickImpose() {
     editSheetWidth.onChange = function () { updateNav(); };
     editSheetHeight.onChange = function () { updateNav(); };
 
-    impTypeDropdown.onChange = function () {
-        if (!impTypeDropdown.selection) return;
+    impTypeDropdown.onChange = function() {
         currentSheetIdx = 0;
         var selIdx = impTypeDropdown.selection.index;
-        logPreview("impTypeDropdown.onChange selIdx=" + selIdx + " (" + impTypeDropdown.selection.text + ")");
-        if (selIdx === 0 || selIdx === 1) { // Saddle Stitch, Perfect Bound
+        if (selIdx === 0 || selIdx === 1) {
             editCols.text = "2";
             editRows.text = "1";
             editCols.enabled = false;
             editRows.enabled = false;
-        } else if (selIdx === 2 || selIdx === 3 || selIdx === 4) { // N Up Consecutive, Cut Stack, Step & Repeat
+        } else if (selIdx === 2 || selIdx === 3 || selIdx === 4) {
             editCols.text = "2";
             editRows.text = "2";
             editCols.enabled = true;
@@ -2049,60 +2338,63 @@ function runQuickImpose() {
         updateSheetSize();
         updateNav();
     };
-
+    
     var isApplyingParams = false;
 
     function getDecimalsForUnit(unit) {
         if (unit === "in") return 3;
         if (unit === "pt") return 1;
-        return 2; // mm
+        return 2;
     }
 
     function convertField(field, fromUnit, toUnit) {
         var val = parseFloat(field.text);
         if (isNaN(val)) return;
         var decimals = getDecimalsForUnit(toUnit);
-        field.text = convertUnits(val, fromUnit, toUnit).toFixed(decimals);
+        var converted = convertUnits(val, fromUnit, toUnit);
+        var factor = Math.pow(10, decimals);
+        converted = Math.round(converted * factor) / factor;
+        field.text = converted.toFixed(decimals);
     }
 
-    unitsDropdown.onChange = function () {
+    unitsDropdown.onChange = function() {
         if (isApplyingParams) return;
         var oldUnit = currentUnit;
         var newUnit = unitsDropdown.selection.text;
         if (oldUnit === newUnit) return;
-
+        
         currentUnit = newUnit;
-
-        // 1. Convert doc dimensions
-        docWidth = convertUnits(docWidthPt, "pt", newUnit);
-        docHeight = convertUnits(docHeightPt, "pt", newUnit);
-
-        // 2. Convert all numeric UI fields
+        
+        docWidth = convertUnits(docWidth, oldUnit, newUnit);
+        docHeight = convertUnits(docHeight, oldUnit, newUnit);
+        bleedLeft = convertUnits(bleedLeft, oldUnit, newUnit);
+        bleedRight = convertUnits(bleedRight, oldUnit, newUnit);
+        bleedTop = convertUnits(bleedTop, oldUnit, newUnit);
+        bleedBottom = convertUnits(bleedBottom, oldUnit, newUnit);
+        
         convertField(editMarginLeft, oldUnit, newUnit);
         convertField(editMarginTop, oldUnit, newUnit);
         convertField(editMarginRight, oldUnit, newUnit);
         convertField(editMarginBottom, oldUnit, newUnit);
-
+        
         convertField(editSpacingHoriz, oldUnit, newUnit);
         convertField(editSpacingVert, oldUnit, newUnit);
-
+        
         convertField(editImpAreaWidth, oldUnit, newUnit);
         convertField(editImpAreaHeight, oldUnit, newUnit);
-
+        
         convertField(editSheetWidth, oldUnit, newUnit);
         convertField(editSheetHeight, oldUnit, newUnit);
-
+        
         convertField(editBleedVal, oldUnit, newUnit);
         convertField(editMarkLength, oldUnit, newUnit);
         convertField(editMarkOffset, oldUnit, newUnit);
-
+        
         updateCreepValues();
-
-        // 3. Re-load paper sizes based on system
+        
         var system = (newUnit === "in") ? "in" : "mm";
         paperSizes = loadPaperSizes(system);
-
-        // Update dropdown options
+        
         var prevSelIndex = sheetDropdown.selection ? sheetDropdown.selection.index : 0;
         sheetDropdown.removeAll();
         for (var i = 0; i < paperSizes.length; i++) {
@@ -2113,19 +2405,23 @@ function runQuickImpose() {
         } else {
             sheetDropdown.selection = 0;
         }
-
+        
         updateSheetSize();
         if (sheetDropdown.onChange) sheetDropdown.onChange();
+        updateNav();
     };
 
-    langDropdown.onChange = function () {
+    chkRotateBacks.onClick = function () {
+        updateNav();
+    };
+
+    langDropdown.onChange = function() {
         if (isApplyingParams) return;
         var lang = langList[langDropdown.selection.index].code;
         applyLanguage(lang);
     };
-
-    // Preset Action Handlers
-    btnSavePreset.onClick = function () {
+    
+    btnSavePreset.onClick = function() {
         var pName = editSaveName.text.replace(/^\s+|\s+$/g, "");
         if (pName === "") {
             alert(translations[currentLang].alert_preset_name);
@@ -2139,8 +2435,7 @@ function runQuickImpose() {
             pFile.open("w");
             pFile.write(currentParams.toSource());
             pFile.close();
-
-            // Refresh load dropdown list
+            
             loadDropdown.removeAll();
             var files = presetsDir.getFiles("*.txt");
             var selectIdx = 0;
@@ -2154,12 +2449,12 @@ function runQuickImpose() {
             loadDropdown.selection = selectIdx;
             editSaveName.text = "";
             alert(translations[currentLang].alert_preset_saved + pName);
-        } catch (e) {
+        } catch(e) {
             alert("Error saving preset:\n" + e);
         }
     };
-
-    btnLoadPreset.onClick = function () {
+    
+    btnLoadPreset.onClick = function() {
         if (!loadDropdown.selection) {
             alert(translations[currentLang].alert_preset_empty);
             return;
@@ -2177,7 +2472,7 @@ function runQuickImpose() {
                 updateSheetSize();
                 if (sheetDropdown.onChange) sheetDropdown.onChange();
                 alert(translations[currentLang].alert_preset_loaded + "\"" + pName + "\"");
-            } catch (e) {
+            } catch(e) {
                 alert("Error loading preset:\n" + e);
             }
         }
@@ -2214,7 +2509,7 @@ function runQuickImpose() {
             }
         }
     };
-
+ 
     function collectUIParameters() {
         return {
             lang: currentLang,
@@ -2241,28 +2536,27 @@ function runQuickImpose() {
             impWidth: parseFloat(editImpAreaWidth.text) || 0,
             impHeight: parseFloat(editImpAreaHeight.text) || 0,
             resetTrimBleed: chkResetTrimBleed.value,
-
-            // Sheet
+            
             sheetSelectionIndex: sheetDropdown.selection.index,
             orientationIndex: orientationDropdown.selection.index,
             sheetWidth: parseFloat(editSheetWidth.text) || 0,
             sheetHeight: parseFloat(editSheetHeight.text) || 0,
-
-            // Options
+            
             sheetsPerSig: parseInt(editSheetsPerSig.text, 10) || 0,
             creepOuter: parseFloat(editCreepOuter.text) || 0,
             creepInner: parseFloat(editCreepInner.text) || 0,
             useDocBleed: chkUseBleed.value,
             customBleed: parseFloat(editBleedVal.text) || 0,
-
-            // Marks
+            
             drawMarks: chkMarksOn.value,
             drawCenterMark: chkDrawCenterMark.value,
             markLength: parseFloat(editMarkLength.text) || 3.0,
             markOffset: parseFloat(editMarkOffset.text) || 3.0,
-
-            // Auto-load preference
-            loadLastByDefault: chkLoadLast.value
+            
+            loadLastByDefault: chkLoadLast.value,
+            
+            pdfBleed: lastParams ? lastParams.pdfBleed : 3.0,
+            askPdfBleed: lastParams ? lastParams.askPdfBleed : true
         };
     }
 
@@ -2283,7 +2577,7 @@ function runQuickImpose() {
             }
             applyLanguage(params.lang);
         }
-
+        
         if (params.impTypeSelectionIndex !== undefined) {
             impTypeDropdown.selection = params.impTypeSelectionIndex;
         }
@@ -2320,9 +2614,9 @@ function runQuickImpose() {
             creepDirDropdown.selection = params.creepDirectionIndex;
         }
         toggleCreepPanel();
-
+        
         var selIdx = impTypeDropdown.selection.index;
-        if (selIdx === 0 || selIdx === 1) { // Saddle Stitch, Perfect Bound
+        if (selIdx === 0 || selIdx === 1) {
             editCols.text = "2";
             editRows.text = "1";
             editCols.enabled = false;
@@ -2339,22 +2633,22 @@ function runQuickImpose() {
         if (params.marginBottom !== undefined) editMarginBottom.text = params.marginBottom.toString();
         if (params.spacingHoriz !== undefined) editSpacingHoriz.text = params.spacingHoriz.toString();
         if (params.spacingVert !== undefined) editSpacingVert.text = params.spacingVert.toString();
-
+        
         if (params.sheetSelectionIndex !== undefined) sheetDropdown.selection = params.sheetSelectionIndex;
         if (params.orientationIndex !== undefined) orientationDropdown.selection = params.orientationIndex;
         if (params.sheetWidth !== undefined) editSheetWidth.text = params.sheetWidth.toString();
         if (params.sheetHeight !== undefined) editSheetHeight.text = params.sheetHeight.toString();
-
+        
         if (params.sheetsPerSig !== undefined) editSheetsPerSig.text = params.sheetsPerSig.toString();
         if (params.creepOuter !== undefined) editCreepOuter.text = params.creepOuter.toString();
         if (params.creepInner !== undefined) editCreepInner.text = params.creepInner.toString();
-
+        
         if (params.useDocBleed !== undefined) {
             chkUseBleed.value = params.useDocBleed;
             editBleedVal.enabled = !params.useDocBleed;
         }
         if (params.customBleed !== undefined) editBleedVal.text = params.customBleed.toString();
-
+        
         if (params.drawMarks !== undefined) {
             chkMarksOn.value = params.drawMarks;
             editMarkLength.enabled = params.drawMarks;
@@ -2367,21 +2661,21 @@ function runQuickImpose() {
         if (params.markLength !== undefined) editMarkLength.text = params.markLength.toString();
         if (params.markOffset !== undefined) editMarkOffset.text = params.markOffset.toString();
         if (params.resetTrimBleed !== undefined) chkResetTrimBleed.value = params.resetTrimBleed;
-
+        
         toggleResetTrimBleed();
-
+        
         if (params.loadLastByDefault !== undefined) chkLoadLast.value = params.loadLastByDefault;
-
+        
         isApplyingParams = false;
     }
 
     function applyLanguage(lang) {
         currentLang = lang;
-
+        
         if (!translations[lang]) {
             translations[lang] = {};
         }
-
+        
         var locFile = new File(resourcesDir + "/Localization/" + lang + ".json");
         if (locFile.exists) {
             locFile.encoding = "UTF-8";
@@ -2398,12 +2692,11 @@ function runQuickImpose() {
                         }
                     }
                 }
-            } catch (e) { }
+            } catch(e) {}
         }
-
+        
         var t = translations[lang] || translations["en"];
-
-        // Fill in missing translation keys from English as fallback
+        
         var en = translations["en"];
         if (t !== en && en) {
             for (var key in en) {
@@ -2412,17 +2705,15 @@ function runQuickImpose() {
                 }
             }
         }
-
-        var titleText = t.title || "QuickImpose v1.2 — Спуск полос";
+        
+        var titleText = t.title || "PDF QuickImpose v1.2 — Спуск полос из PDF";
         if (titleText.indexOf("v1.2") === -1) {
-            titleText = titleText.replace(/^QuickImpose/i, "QuickImpose v1.2");
+            titleText = titleText.replace(/^PDF QuickImpose/i, "PDF QuickImpose v1.2").replace(/^QuickImpose/i, "PDF QuickImpose v1.2");
         }
         win.text = titleText;
-
-        // Update document info text
+        
         var infoText = t.file + docName + " (" + docPgsCount + t.pages + ")   |   " + t.size + docWidth.toFixed(1) + " x " + docHeight.toFixed(1) + " " + unitsDropdown.selection.text + " (" + t.bleeds + bleedLeft.toFixed(1) + " " + unitsDropdown.selection.text + ")";
         txtDocInfo.text = infoText;
-        // Panel titles
         pnlTypeUnits.text = t.pnl_type_units;
         pnlGrid.text = t.pnl_grid;
         pnlMargins.text = t.pnl_margins;
@@ -2433,8 +2724,7 @@ function runQuickImpose() {
         pnlCreep.text = t.pnl_creep;
         pnlBleedOpts.text = t.pnl_bleed_opts;
         pnlMarks.text = t.pnl_marks;
-
-        // Labels stored in uiLabels
+        
         uiLabels.lblLang.text = t.lbl_lang;
         if (uiLabels.impType) uiLabels.impType.text = t.lbl_imp_type;
         uiLabels.units.text = t.lbl_units;
@@ -2448,7 +2738,7 @@ function runQuickImpose() {
         uiLabels.spacingVert.text = t.lbl_spacing_vert;
         uiLabels.impAreaWidth.text = t.lbl_imp_width;
         uiLabels.impAreaHeight.text = t.lbl_imp_height;
-
+        
         uiLabels.sheetWidth.text = t.lbl_sheet_width;
         uiLabels.sheetHeight.text = t.lbl_sheet_height;
         uiLabels.sheetsPerSig.text = t.lbl_sheets_per_sig;
@@ -2457,37 +2747,35 @@ function runQuickImpose() {
         uiLabels.customBleed.text = t.lbl_custom_bleed;
         uiLabels.markLength.text = t.lbl_mark_length;
         uiLabels.markOffset.text = t.lbl_mark_offset;
-
+        
         uiLabels.lblCover.text = t.lbl_cover;
         uiLabels.lblCreepDir.text = t.lbl_creep_dir;
         updateBlockLabel();
-
+        
         var prevCoverSel = coverDropdown.selection ? coverDropdown.selection.index : 0;
         coverDropdown.removeAll();
         for (var i = 0; i < paperWeightNames.length; i++) {
             coverDropdown.add("item", paperWeightNames[i]);
         }
         coverDropdown.selection = prevCoverSel;
-
+        
         var prevBlockSel = blockDropdown.selection ? blockDropdown.selection.index : 1;
         blockDropdown.removeAll();
         for (var i = 0; i < paperWeightNames.length; i++) {
             blockDropdown.add("item", paperWeightNames[i]);
         }
         blockDropdown.selection = prevBlockSel;
-
+        
         var prevDirSel = creepDirDropdown.selection ? creepDirDropdown.selection.index : 0;
         creepDirDropdown.removeAll();
         for (var i = 0; i < t.creep_dir_options.length; i++) {
             creepDirDropdown.add("item", t.creep_dir_options[i]);
         }
         creepDirDropdown.selection = prevDirSel;
-
-        // Sheet Format Dropdown labels
+        
         uiLabels.sheetFormat.text = t.lbl_sheet_format;
         uiLabels.sheetOrient.text = t.lbl_sheet_orient;
-
-        // Checkboxes and buttons
+        
         chkLoadLast.text = t.chk_load_last;
         uiLabels.savePreset.text = t.lbl_preset_save;
         btnSavePreset.text = t.btn_preset_save;
@@ -2497,10 +2785,11 @@ function runQuickImpose() {
             btnDeletePreset.helpTip = t.tip_preset_delete || "Удалить выбранный пресет";
         }
         btnExample.text = t.btn_example || "Пример";
-
-        var activeBleedVal = convertUnits(docBleedLeft, "pt", defaultUnitStr);
-        var unitLabel = defaultUnitStr;
-        if (lang === "ru" && defaultUnitStr === "mm") {
+        
+        var activeUnit = (unitsDropdown && unitsDropdown.selection) ? unitsDropdown.selection.text : currentUnit;
+        var activeBleedVal = convertUnits(bleedLeft, currentUnit, activeUnit);
+        var unitLabel = activeUnit;
+        if (lang === "ru" && activeUnit === "mm") {
             unitLabel = "мм";
         }
         var bleedStr = (Math.round(activeBleedVal * 1000) / 1000) + " " + unitLabel;
@@ -2517,36 +2806,33 @@ function runQuickImpose() {
         chkEnableCreep.text = t.chk_enable_creep;
         chkCompensateThickness.text = t.chk_compensate_thickness || "Thickness Compensation";
         editCompensateCoeff.helpTip = t.tip_compensate_thickness || "Thickness compensation coefficient (K)";
-
+        
         btnCancel.text = t.btn_cancel;
         btnImpose.text = t.btn_impose;
-
+        
         if (uiLabels.lblAuthorLink) uiLabels.lblAuthorLink.text = t.lbl_author_link;
         if (uiLabels.lblMoreScripts) uiLabels.lblMoreScripts.text = t.lbl_more_scripts;
-
+        
         if (t.tip_edit_paper_sizes) {
             btnEditPaperSizes.helpTip = t.tip_edit_paper_sizes;
         }
         if (t.tip_edit_paper_weights) {
             btnEditPaperWeights.helpTip = t.tip_edit_paper_weights;
         }
-
-        // Imposition Type Dropdown
+        
         var prevImpSel = impTypeDropdown.selection ? impTypeDropdown.selection.index : 0;
         impTypeDropdown.removeAll();
         for (var i = 0; i < t.imp_types.length; i++) {
             impTypeDropdown.add("item", t.imp_types[i]);
         }
         impTypeDropdown.selection = prevImpSel;
-
-        // Sheet Orientation Dropdown
+        
         var prevOrientSel = orientationDropdown.selection ? orientationDropdown.selection.index : 0;
         orientationDropdown.removeAll();
         orientationDropdown.add("item", t.orient_horiz);
         orientationDropdown.add("item", t.orient_vert);
         orientationDropdown.selection = prevOrientSel;
-
-        // Reload paper sizes list
+        
         var prevPaperSel = sheetDropdown.selection ? sheetDropdown.selection.index : 0;
         paperSizes = loadPaperSizes(unitsDropdown.selection.text === "in" ? "in" : "mm");
         sheetDropdown.removeAll();
@@ -2558,26 +2844,24 @@ function runQuickImpose() {
         } else {
             sheetDropdown.selection = 0;
         }
-
+        
         if (win.visible) {
             win.layout.layout(true);
             win.center();
         }
     }
 
-    // Auto-load last settings if allowed
     var shouldLoadLast = getInitVal("loadLastByDefault", true);
     chkLoadLast.value = shouldLoadLast;
     if (shouldLoadLast && lastParams) {
         applyParametersToUI(lastParams);
     } else {
-        // Apply default languages
         applyLanguage(currentLang);
     }
 
-    chkRotateBacks.onClick = function () { updateNav(); };
-
-    // Initial UI calculation
+    if (chkUseBleed.value) {
+        syncMarginsWithDocBleed();
+    }
     updateSheetSize();
     toggleCreepPanel();
     toggleResetTrimBleed();
@@ -2585,8 +2869,7 @@ function runQuickImpose() {
 
     if (win.show() === 1) {
         var userParams = collectUIParameters();
-
-        // Auto-save settings
+        
         try {
             var settingsFolder = new Folder(resourcesDir + "/Data");
             if (!settingsFolder.exists) {
@@ -2597,17 +2880,20 @@ function runQuickImpose() {
             sFile.open("w");
             sFile.write(userParams.toSource());
             sFile.close();
-        } catch (e) { }
-
-        // Run Imposition Execution
-        executeImposition(srcDoc, userParams);
+        } catch(e) {}
+        
+        executeImposition(srcDoc, userParams, pdfName);
+    } else {
+        try {
+            srcDoc.close(SaveOptions.NO);
+        } catch(e) {}
     }
 }
 
 // ----------------------------------------------------
 // IMPOSITION EXECUTION ENGINE
 // ----------------------------------------------------
-function executeImposition(srcDoc, params) {
+function executeImposition(srcDoc, params, pdfName) {
     function getFormattedDate() {
         var d = new Date();
         var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -2619,45 +2905,40 @@ function executeImposition(srcDoc, params) {
         var hrs = d.getHours();
         var mins = d.getMinutes();
         var secs = d.getSeconds();
-
+        
         if (hrs < 10) hrs = "0" + hrs;
         if (mins < 10) mins = "0" + mins;
         if (secs < 10) secs = "0" + secs;
-
+        
         return day + " " + month + " " + date + " " + year + " " + hrs + ":" + mins + ":" + secs;
     }
 
     var initialLang = params.lang || "ru";
 
-    // 1. Save original ruler settings
     var savedUnitsH = srcDoc.viewPreferences.horizontalMeasurementUnits;
     var savedUnitsV = srcDoc.viewPreferences.verticalMeasurementUnits;
     var savedRuler = srcDoc.viewPreferences.rulerOrigin;
-
-    // 2. Set targetUnits based on params
+    
     var targetUnits = MeasurementUnits.MILLIMETERS;
     if (params.unitStr === "pt") targetUnits = MeasurementUnits.POINTS;
     else if (params.unitStr === "in") targetUnits = MeasurementUnits.INCHES;
-
-    // Force source document to use the selected units (e.g. Millimeters) for all calculations
+    
     srcDoc.viewPreferences.horizontalMeasurementUnits = targetUnits;
     srcDoc.viewPreferences.verticalMeasurementUnits = targetUnits;
     srcDoc.viewPreferences.rulerOrigin = RulerOrigin.PAGE_ORIGIN;
 
-    var docName = srcDoc.name;
+    var docName = pdfName || srcDoc.name;
     var docWidth = srcDoc.documentPreferences.pageWidth;
     var docHeight = srcDoc.documentPreferences.pageHeight;
+    var docPgsCount = srcDoc.pages.length;
 
-    // 3. Export source document to temporary PDF in _pdf_tmp folder of document directory
-    var docFolder = srcDoc.saved ? srcDoc.filePath : Folder.temp;
-    var pdfFolder = new Folder(docFolder + "/_pdf_tmp");
+    var pdfFolder = new Folder(Folder.temp + "/_pdf_tmp");
     if (!pdfFolder.exists) {
         pdfFolder.create();
     }
-    var docNameWithoutExt = srcDoc.name.replace(/\.[a-zA-Z0-9]+$/, "");
+    var docNameWithoutExt = docName.replace(/\.[a-zA-Z0-9]+$/, "");
     var tempPDF = new File(pdfFolder + "/" + docNameWithoutExt + ".pdf");
-
-    // Turn on bleed and configure high-quality PDF preferences in export
+    
     var savedBleedWithPDF = app.pdfExportPreferences.useDocumentBleedWithPDF;
     var savedExportBleedTop = app.pdfExportPreferences.bleedTop;
     var savedExportBleedBottom = app.pdfExportPreferences.bleedBottom;
@@ -2665,7 +2946,9 @@ function executeImposition(srcDoc, params) {
     var savedExportBleedOutside = app.pdfExportPreferences.bleedOutside;
     var savedExportReaderSpreads = app.pdfExportPreferences.exportReaderSpreads;
     var savedAcrobatCompatibility = app.pdfExportPreferences.acrobatCompatibility;
-
+    var savedPageRange = app.pdfExportPreferences.pageRange;
+    
+    try { app.pdfExportPreferences.pageRange = PageRange.ALL_PAGES; } catch(e) {}
     app.pdfExportPreferences.useDocumentBleedWithPDF = params.useDocBleed;
     if (!params.useDocBleed) {
         app.pdfExportPreferences.bleedTop = params.customBleed;
@@ -2673,22 +2956,24 @@ function executeImposition(srcDoc, params) {
         app.pdfExportPreferences.bleedInside = params.customBleed;
         app.pdfExportPreferences.bleedOutside = params.customBleed;
     }
-
-    try { app.pdfExportPreferences.exportReaderSpreads = false; } catch (e) { }
-    try { app.pdfExportPreferences.acrobatCompatibility = AcrobatCompatibility.ACROBAT_5; } catch (e) { }
-
-    // Export without interactive dialogs, using active preferences (no preset passed)
+    
+    try { app.pdfExportPreferences.exportReaderSpreads = false; } catch(e){}
+    try { app.pdfExportPreferences.acrobatCompatibility = AcrobatCompatibility.ACROBAT_5; } catch(e){}
+    
     app.scriptPreferences.userInteractionLevel = UserInteractionLevels.neverInteract;
     try {
         srcDoc.exportFile(ExportFormat.PDF_TYPE, tempPDF, false);
-    } catch (e) {
+    } catch(e) {
         app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
-        alert(translations[initialLang].alert_err_export + e);
+        alert((translations[initialLang] ? translations[initialLang].alert_err_export : "Error exporting temporary PDF:\n") + e);
         return;
     }
     app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
+    
+    try {
+        srcDoc.close(SaveOptions.NO);
+    } catch(e) {}
 
-    // Restore PDF export preferences
     app.pdfExportPreferences.useDocumentBleedWithPDF = savedBleedWithPDF;
     app.pdfExportPreferences.bleedTop = savedExportBleedTop;
     app.pdfExportPreferences.bleedBottom = savedExportBleedBottom;
@@ -2696,67 +2981,59 @@ function executeImposition(srcDoc, params) {
     app.pdfExportPreferences.bleedOutside = savedExportBleedOutside;
     app.pdfExportPreferences.exportReaderSpreads = savedExportReaderSpreads;
     app.pdfExportPreferences.acrobatCompatibility = savedAcrobatCompatibility;
-
-    // 2. Load PDF Page Info (Trim and Bleed bounds)
-    var testDoc = app.documents.add(false); // invisible test doc
+    try { app.pdfExportPreferences.pageRange = savedPageRange; } catch(e) {}
+    
+    var testDoc = app.documents.add(false);
     testDoc.viewPreferences.horizontalMeasurementUnits = targetUnits;
     testDoc.viewPreferences.verticalMeasurementUnits = targetUnits;
     testDoc.viewPreferences.rulerOrigin = RulerOrigin.PAGE_ORIGIN;
-
+    
     app.pdfPlacePreferences.pageNumber = 1;
     app.pdfPlacePreferences.pdfCrop = PDFCrop.CROP_TRIM;
     var placedTrim = testDoc.pages.item(0).place(tempPDF, [0, 0])[0];
-    var trimBounds = placedTrim.parent.geometricBounds; // [T, L, B, R]
+    var trimBounds = placedTrim.parent.geometricBounds;
     placedTrim.parent.remove();
-
+    
     app.pdfPlacePreferences.pdfCrop = PDFCrop.CROP_BLEED;
     var placedBleed = testDoc.pages.item(0).place(tempPDF, [0, 0])[0];
-    var bleedBounds = placedBleed.parent.geometricBounds; // [T, L, B, R]
+    var bleedBounds = placedBleed.parent.geometricBounds;
     placedBleed.parent.remove();
     testDoc.close(SaveOptions.NO);
-
-    // Calculate concentric bleed offsets (TrimBox and BleedBox share the same center)
+    
     var bleedHeight = bleedBounds[2] - bleedBounds[0];
     var trimHeight = trimBounds[2] - trimBounds[0];
     var bleedWidth = bleedBounds[3] - bleedBounds[1];
     var trimWidth = trimBounds[3] - trimBounds[1];
-
+    
     var bValY = (bleedHeight - trimHeight) / 2;
     var bValX = (bleedWidth - trimWidth) / 2;
-
+    
     var bTop = bValY;
     var bBottom = bValY;
     var bLeft = bValX;
     var bRight = bValX;
-
-    // Total pages in source PDF
-    var totalPgs = srcDoc.pages.length;
-
-    // Page dimensions
-    var W = srcDoc.documentPreferences.pageWidth;
-    var H = srcDoc.documentPreferences.pageHeight;
-
-    // Imposition Type Index
+    
+    var totalPgs = docPgsCount;
+    var W = docWidth;
+    var H = docHeight;
+    
     var impIdx = params.impTypeSelectionIndex;
-
-    // Margins, spacing, and creep
+    
     var mLeft = params.marginLeft;
     var mTop = params.marginTop;
     var mRight = params.marginRight;
     var mBottom = params.marginBottom;
     var sHoriz = params.spacingHoriz;
     var sVert = params.spacingVert;
-
-    // For non-booklet modes, we add bleed to the spacing to prevent bleed overlap and ensure correct cuts
+    
     if (impIdx !== 0 && impIdx !== 1) {
         sHoriz += (bLeft + bRight);
         sVert += (bTop + bBottom);
     }
-
+    
     var creepOuterVal = params.enableCreep ? params.creepOuter : 0.0;
     var creepInnerVal = params.enableCreep ? params.creepInner : 0.0;
-
-    // Build Imposition Sequence
+    
     var sequence;
     if (impIdx === 0) {
         sequence = generateSaddleStitchSequence(totalPgs, params.sheetsPerSig);
@@ -2769,11 +3046,9 @@ function executeImposition(srcDoc, params) {
     } else if (impIdx === 4) {
         sequence = generateStepAndRepeatSequence(totalPgs, params.cols, params.rows);
     } else {
-        // Fallback
         sequence = generateConsecutiveSequence(totalPgs, params.cols, params.rows);
     }
-
-    // Filter out completely empty sheets (where all cells pageNum <= 0)
+    
     var activeSheets = [];
     for (var i = 0; i < sequence.sheets.length; i++) {
         var sh = sequence.sheets[i];
@@ -2793,23 +3068,21 @@ function executeImposition(srcDoc, params) {
         }
     }
     sequence.sheets = activeSheets;
-
-    // 3. Create target Document
+    
     var targetSheetW = mLeft + mRight + sequence.pagesAcross * W + (sequence.pagesAcross - 1) * sHoriz;
     var targetSheetH = mTop + mBottom + sequence.pagesDown * H + (sequence.pagesDown - 1) * sVert;
-
-    var showingWindow = false; // fast execution
+    
+    var showingWindow = false;
     var targetDoc = app.documents.add(showingWindow);
-
+    
     targetDoc.viewPreferences.horizontalMeasurementUnits = targetUnits;
     targetDoc.viewPreferences.verticalMeasurementUnits = targetUnits;
     targetDoc.viewPreferences.rulerOrigin = RulerOrigin.PAGE_ORIGIN;
-
+    
     targetDoc.documentPreferences.facingPages = false;
     targetDoc.documentPreferences.pageWidth = targetSheetW;
     targetDoc.documentPreferences.pageHeight = targetSheetH;
-
-    // Zero out margins for all pages in target document
+    
     for (var p = 0; p < targetDoc.pages.length; p++) {
         var pg = targetDoc.pages.item(p);
         pg.marginPreferences.top = 0;
@@ -2817,14 +3090,12 @@ function executeImposition(srcDoc, params) {
         pg.marginPreferences.left = 0;
         pg.marginPreferences.right = 0;
     }
-
-    // Process each sheet side
+    
     var totalFlats = sequence.sheets.length;
     for (var fIdx = 0; fIdx < totalFlats; fIdx++) {
         var sheetObj = sequence.sheets[fIdx];
         var markItems = [];
-
-        // Add pages to target doc if needed
+        
         var targetPage;
         if (fIdx === 0) {
             targetPage = targetDoc.pages.item(0);
@@ -2835,115 +3106,96 @@ function executeImposition(srcDoc, params) {
             targetPage.marginPreferences.left = 0;
             targetPage.marginPreferences.right = 0;
         }
-
-        // Apply front or back grid
+        
         var grid = sheetObj.front;
         var isBack = false;
         if (sheetObj.isBack) {
             grid = sheetObj.back;
             isBack = true;
         }
-
-        // Calculate creep for this sheet
+        
         var totalSigSheets = sequence.sheetsPerSignature;
-        var sheetSigIdx = sheetObj.sheetIndex; // 0-based within signature
+        var sheetSigIdx = sheetObj.sheetIndex;
         var creepVal = 0;
         if (totalSigSheets > 1) {
             creepVal = creepOuterVal + (sheetSigIdx / (totalSigSheets - 1)) * (creepInnerVal - creepOuterVal);
         } else {
             creepVal = creepOuterVal;
         }
-
-        // Place cells
+        
         for (var r = 0; r < sequence.pagesDown; r++) {
             for (var c = 0; c < sequence.pagesAcross; c++) {
                 var cell = grid[r][c];
                 if (!cell || cell.pageNum <= 0 || cell.pageNum > totalPgs) continue;
-
-                // Coordinates of cell trim on sheet
+                
                 var X = mLeft + c * (W + sHoriz);
                 var Y = mTop + r * (H + sVert);
-
-                // Creep shift horizontal
+                
                 var shiftX = 0;
                 if ((impIdx === 0 || impIdx === 1) && sequence.pagesAcross === 2) {
                     if (c === 0) {
-                        // Left page: creep shifts content right (towards spine)
                         shiftX = creepVal;
                     } else if (c === 1) {
-                        // Right page: creep shifts content left (towards spine)
                         shiftX = -creepVal;
                     }
                 }
-
-                // 1. Create a rectangle frame on the page
+                
                 var frame = targetPage.rectangles.add();
-
-                // 2. Set frame bounds to the full bleed size initially (symmetrical)
+                
                 var frameTop = Y - bTop;
                 var frameBottom = Y + H + bBottom;
                 var frameLeft = X - bLeft + shiftX;
                 var frameRight = X + W + bRight + shiftX;
-
+                
                 frame.geometricBounds = [frameTop, frameLeft, frameBottom, frameRight];
-
-                // Make the frame background and stroke completely transparent/empty
+                
                 frame.strokeWeight = 0;
                 frame.strokeColor = "None";
                 frame.fillColor = "None";
-
-                // 3. Place PDF page inside the frame
+                
                 app.pdfPlacePreferences.pageNumber = cell.pageNum;
                 app.pdfPlacePreferences.pdfCrop = PDFCrop.CROP_BLEED;
-
+                
                 var placedPDF = frame.place(tempPDF)[0];
-
-                // 4. Center content inside the frame to align TrimBox perfectly
+                
                 try {
                     frame.fit(FitOptions.CENTER_CONTENT);
-                } catch (e) { }
-
-                // Force PDF content to align exactly to the expected Bleed box coordinates
+                } catch(e) {}
+                
                 try {
                     placedPDF.geometricBounds = [frameTop, frameLeft, frameBottom, frameRight];
-                } catch (e) { }
-
-                // Rotate PDF content if required (using 180 degrees)
+                } catch(e) {}
+                
                 if (cell.rotated) {
                     placedPDF.rotationAngle = 180;
                 }
-
-                // 5. Now clip the frame (outer edges keep bleed, inner edge clips at spine)
+                
                 var clipLeft = frameLeft;
                 var clipRight = frameRight;
                 if ((impIdx === 0 || impIdx === 1) && sequence.pagesAcross === 2) {
                     if (c === 0) {
-                        // Left page: Spine is on the right. Clip right edge exactly at X + W
                         clipRight = X + W;
                     } else if (c === 1) {
-                        // Right page: Spine is on the left. Clip left edge exactly at X
                         clipLeft = X;
                     }
                 }
                 frame.geometricBounds = [frameTop, clipLeft, frameBottom, clipRight];
             }
         }
-
+        
         if (params.drawMarks) {
             var gridWidth = sequence.pagesAcross * W + (sequence.pagesAcross - 1) * sHoriz;
             var gridHeight = sequence.pagesDown * H + (sequence.pagesDown - 1) * sVert;
             var outset = params.markOffset;
             var len = params.markLength;
-
+            
             var xCoords, yCoords;
-
+            
             var isBooklet = (impIdx === 0 || impIdx === 1);
             if (isBooklet) {
-                // Booklet: crop marks only on outer perimeter of the sheet (no middle cuts)
                 xCoords = [mLeft, mLeft + gridWidth];
                 yCoords = [mTop, mTop + gridHeight];
             } else {
-                // Non-booklet (Step & Repeat, Consecutive, etc.): crop marks at every column/row boundary
                 xCoords = [mLeft];
                 for (var c = 0; c < sequence.pagesAcross; c++) {
                     var xL = mLeft + c * (W + sHoriz);
@@ -2953,7 +3205,7 @@ function executeImposition(srcDoc, params) {
                     }
                     xCoords.push(xR);
                 }
-
+                
                 yCoords = [mTop];
                 for (var r = 0; r < sequence.pagesDown; r++) {
                     var yT = mTop + r * (H + sVert);
@@ -2964,10 +3216,10 @@ function executeImposition(srcDoc, params) {
                     yCoords.push(yB);
                 }
             }
-
+            
             var regColor = targetPage.parent.parent.colors.item("Registration");
-            var strokeW = 0.25; // thin registration line in points
-
+            var strokeW = 0.25;
+            
             function drawPageLine(y1, x1, y2, x2, strokeWidth) {
                 var line = targetPage.graphicLines.add();
                 line.strokeColor = regColor;
@@ -2975,14 +3227,14 @@ function executeImposition(srcDoc, params) {
                 line.geometricBounds = [y1, x1, y2, x2];
                 markItems.push(line);
             }
-
+            
             // Draw vertical marks in top and bottom margins
             for (var i = 0; i < xCoords.length; i++) {
                 var x = xCoords[i];
                 drawPageLine(mTop - outset - len, x, mTop - outset, x);
                 drawPageLine(mTop + gridHeight + outset, x, mTop + gridHeight + outset + len, x);
             }
-
+            
             // Draw horizontal marks in left and right margins
             for (var i = 0; i < yCoords.length; i++) {
                 var y = yCoords[i];
@@ -2998,14 +3250,14 @@ function executeImposition(srcDoc, params) {
                     for (var c = 0; c < sequence.pagesAcross - 1; c++) {
                         var xR = mLeft + c * (W + sHoriz) + W;
                         var xL = xR + sHoriz;
-
+                        
                         for (var r = 0; r < sequence.pagesDown; r++) {
                             var yT = mTop + r * (H + sVert);
                             var yB = yT + H;
-
+                            
                             drawPageLine(yT, xR + outset, yT, xR + outset + hMarkLen);
                             drawPageLine(yT, xL - outset - hMarkLen, yT, xL - outset);
-
+                            
                             drawPageLine(yB, xR + outset, yB, xR + outset + hMarkLen);
                             drawPageLine(yB, xL - outset - hMarkLen, yB, xL - outset);
                         }
@@ -3021,24 +3273,24 @@ function executeImposition(srcDoc, params) {
                     for (var r = 0; r < sequence.pagesDown - 1; r++) {
                         var yB = mTop + r * (H + sVert) + H;
                         var yT = yB + sVert;
-
+                        
                         for (var c = 0; c < sequence.pagesAcross; c++) {
                             var xL = mLeft + c * (W + sHoriz);
                             var xR = xL + W;
-
+                            
                             drawPageLine(yB + outset, xL, yB + outset + vMarkLen, xL);
                             drawPageLine(yT - outset - vMarkLen, xL, yT - outset, xL);
-
+                            
                             drawPageLine(yB + outset, xR, yB + outset + vMarkLen, xR);
                             drawPageLine(yT - outset - vMarkLen, xR, yT - outset, xR);
                         }
                     }
                 }
             }
-
+            
             // Draw center fold lines if checked
             if (params.drawCenterMark) {
-                var foldStrokeW = 1.0; // thicker fold line in points (1 pt)
+                var foldStrokeW = 1.0;
                 if (isBooklet) {
                     var centerX = mLeft + gridWidth / 2;
                     drawPageLine(mTop - outset - len, centerX, mTop - outset, centerX, foldStrokeW);
@@ -3052,8 +3304,7 @@ function executeImposition(srcDoc, params) {
                 }
             }
         }
-
-        // Group all items on targetPage to make it easy to center them on the final sheet later
+        
         var pageItems = targetPage.pageItems.everyItem().getElements();
         if (markItems.length > 0) {
             pageItems = pageItems.concat(markItems);
@@ -3065,23 +3316,20 @@ function executeImposition(srcDoc, params) {
             }
         }
     }
-
+    
     if (params.resetTrimBleed) {
-        // Reset Trim + Bleed option
         targetDoc.documentPreferences.pageWidth = targetSheetW - (bLeft + bRight);
         targetDoc.documentPreferences.pageHeight = targetSheetH - (bTop + bBottom);
-
+        
         targetDoc.documentPreferences.documentBleedTopOffset = bTop;
         targetDoc.documentPreferences.documentBleedBottomOffset = bBottom;
         targetDoc.documentPreferences.documentBleedInsideOrLeftOffset = bLeft;
         targetDoc.documentPreferences.documentBleedOutsideOrRightOffset = bRight;
     } else {
-        // Standard centering on sheet size
         targetDoc.documentPreferences.pageWidth = params.sheetWidth;
         targetDoc.documentPreferences.pageHeight = params.sheetHeight;
     }
-
-    // Set targetDoc margins, center the group, and ungroup for all pages
+    
     for (var p = 0; p < targetDoc.pages.length; p++) {
         var pg = targetDoc.pages.item(p);
         if (!params.resetTrimBleed) {
@@ -3090,41 +3338,40 @@ function executeImposition(srcDoc, params) {
             pg.marginPreferences.left = bLeft;
             pg.marginPreferences.right = bRight;
         }
-
+        
         var moveX = 0;
         var moveY = 0;
         var postBounds = null;
         var groups = pg.groups.everyItem().getElements();
         if (groups.length > 0) {
             var grp = groups[0];
-            var grpBounds = grp.geometricBounds; // [T, L, B, R]
+            var grpBounds = grp.geometricBounds;
             var grpW = grpBounds[3] - grpBounds[1];
             var grpH = grpBounds[2] - grpBounds[0];
             var grpCenterX = grpBounds[1] + grpW / 2;
             var grpCenterY = grpBounds[0] + grpH / 2;
-
+            
             moveX = (targetDoc.documentPreferences.pageWidth / 2) - grpCenterX;
             moveY = (targetDoc.documentPreferences.pageHeight / 2) - grpCenterY;
-
+            
             grp.move(undefined, [moveX, moveY]);
             postBounds = grp.geometricBounds;
         }
-
-        // Add Slug Info line if requested
+        
         if (params.infoSlug) {
             var fontSizePt = params.slugFontSize || 7;
             var offsetTop, offsetLeft, hFrame, wFrame;
-
+            
             hFrame = convertUnits(fontSizePt + 5, "pt", params.unitStr);
-
+            
             var halfSheetW = targetDoc.documentPreferences.pageWidth / 2;
             var max180mm = convertUnits(180, "mm", params.unitStr);
             wFrame = Math.min(halfSheetW, max180mm);
-
+            
             var shift3mm = convertUnits(3, "mm", params.unitStr);
             var outsetVal = convertUnits(params.drawMarks ? (params.markOffset || 3) : 0, "mm", params.unitStr);
             var lenVal = convertUnits(params.drawMarks ? (params.markLength || 3) : 0, "mm", params.unitStr);
-
+            
             if (params.resetTrimBleed) {
                 offsetLeft = shift3mm;
                 offsetTop = -outsetVal - lenVal - hFrame;
@@ -3133,7 +3380,7 @@ function executeImposition(srcDoc, params) {
                 offsetLeft = postBounds[1] + outsetVal + lenVal + shift3mm;
                 // Position Y at postBounds[0] (top tip of top-left crop mark)
                 offsetTop = postBounds[0];
-
+                
                 var minTop = convertUnits(2, "mm", params.unitStr);
                 if (offsetTop < minTop) {
                     offsetTop = minTop;
@@ -3142,75 +3389,66 @@ function executeImposition(srcDoc, params) {
                 offsetTop = convertUnits(5, "mm", params.unitStr);
                 offsetLeft = convertUnits(5, "mm", params.unitStr);
             }
-
+            
             var impTypeNameEn = "SaddleStitch";
             if (params.impTypeSelectionIndex === 1) impTypeNameEn = "PerfectBound";
             else if (params.impTypeSelectionIndex === 2) impTypeNameEn = "Consecutive";
             else if (params.impTypeSelectionIndex === 3) impTypeNameEn = "CutStack";
             else if (params.impTypeSelectionIndex === 4) impTypeNameEn = "StepAndRepeat";
-
+            
             var infoText = docName + " (" + docWidth.toFixed(1) + " x " + docHeight.toFixed(1) + " " + params.unitStr + ") -- Surface " + (p + 1) + " of " + targetDoc.pages.length + " -- " + getFormattedDate() + " -- " + impTypeNameEn;
-
+            
             var textFrame = pg.textFrames.add();
             textFrame.geometricBounds = [offsetTop, offsetLeft, offsetTop + hFrame, offsetLeft + wFrame];
             textFrame.contents = infoText;
-
+            
             var textPara = textFrame.parentStory.paragraphs.item(0);
             textPara.pointSize = fontSizePt;
             try {
                 textPara.appliedFont = app.fonts.item("Arial");
-            } catch (e) {
+            } catch(e) {
                 try {
                     textPara.appliedFont = app.fonts.item("Minion Pro");
-                } catch (e2) { }
+                } catch(e2) {}
             }
             textFrame.textFramePreferences.verticalJustification = VerticalJustification.TOP_ALIGN;
         }
     }
-
-    // Restore original ruler settings on source document
-    srcDoc.viewPreferences.horizontalMeasurementUnits = savedUnitsH;
-    srcDoc.viewPreferences.verticalMeasurementUnits = savedUnitsV;
-    srcDoc.viewPreferences.rulerOrigin = savedRuler;
-
-    // Open layout window to make visible
+    
     targetDoc.windows.add();
-
-    // Set active window transform reference point to Center (квадрат с точками)
+    
     try {
         app.activeWindow.transformReferencePoint = AnchorPoint.CENTER_ANCHOR;
-    } catch (e) { }
-
-    alert(translations[initialLang].alert_success + totalFlats);
+    } catch(e) {}
+    
+    alert((translations[initialLang] ? translations[initialLang].alert_success : "Imposition completed successfully!\nCreated Flats: ") + totalFlats);
 }
 
 // ----------------------------------------------------
 // DYNAMIC SEQUENCE GENERATION ALGORITHMS
 // ----------------------------------------------------
 function generateSaddleStitchSequence(totalPages, sheetsPerSig) {
-    // Pad total pages to multiple of 4
     var paddedPages = Math.ceil(totalPages / 4) * 4;
     var sigPages = sheetsPerSig > 0 ? sheetsPerSig * 4 : paddedPages;
     var sigCount = Math.ceil(paddedPages / sigPages);
-
+    
     var seq = {
         pagesAcross: 2,
         pagesDown: 1,
         sheetsPerSignature: sigPages / 4,
         sheets: []
     };
-
+    
     for (var sigIdx = 0; sigIdx < sigCount; sigIdx++) {
         var startPg = sigIdx * sigPages;
         var sheetsInSig = sigPages / 4;
-
+        
         for (var s = 0; s < sheetsInSig; s++) {
             var leftFront = startPg + sigPages - 2 * s;
             var rightFront = startPg + 2 * s + 1;
             var leftBack = startPg + 2 * s + 2;
             var rightBack = startPg + sigPages - 2 * s - 1;
-
-            // Sheet Front
+            
             seq.sheets.push({
                 sheetIndex: s,
                 isBack: false,
@@ -3219,8 +3457,7 @@ function generateSaddleStitchSequence(totalPages, sheetsPerSig) {
                     { pageNum: rightFront, rotated: false }
                 ]]
             });
-
-            // Sheet Back
+            
             seq.sheets.push({
                 sheetIndex: s,
                 isBack: true,
@@ -3236,23 +3473,22 @@ function generateSaddleStitchSequence(totalPages, sheetsPerSig) {
 
 function generateConsecutiveSequence(totalPages, cols, rows) {
     var perPageSide = cols * rows;
-    var perSheet = perPageSide * 2; // double-sided
+    var perSheet = perPageSide * 2;
     var totalSheets = Math.ceil(totalPages / perSheet);
-
+    
     var seq = {
         pagesAcross: cols,
         pagesDown: rows,
         sheetsPerSignature: totalSheets,
         sheets: []
     };
-
+    
     for (var s = 0; s < totalSheets; s++) {
         var frontGrid = [];
         var backGrid = [];
         var startFront = s * perSheet + 1;
         var startBack = s * perSheet + perPageSide + 1;
-
-        // Front Grid
+        
         for (var r = 0; r < rows; r++) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
@@ -3260,8 +3496,7 @@ function generateConsecutiveSequence(totalPages, cols, rows) {
             }
             frontGrid.push(rowCells);
         }
-
-        // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
+        
         for (var r = 0; r < rows; r++) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
@@ -3270,13 +3505,13 @@ function generateConsecutiveSequence(totalPages, cols, rows) {
             }
             backGrid.push(rowCells);
         }
-
+        
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             front: frontGrid
         });
-
+        
         seq.sheets.push({
             sheetIndex: s,
             isBack: true,
@@ -3288,21 +3523,20 @@ function generateConsecutiveSequence(totalPages, cols, rows) {
 
 function generateCutStackSequence(totalPages, cols, rows) {
     var perPageSide = cols * rows;
-    var perSheet = perPageSide * 2; // double-sided
+    var perSheet = perPageSide * 2;
     var totalSheets = Math.ceil(totalPages / perSheet);
-
+    
     var seq = {
         pagesAcross: cols,
         pagesDown: rows,
         sheetsPerSignature: totalSheets,
         sheets: []
     };
-
+    
     for (var s = 0; s < totalSheets; s++) {
         var frontGrid = [];
         var backGrid = [];
-
-        // Front Grid
+        
         for (var r = 0; r < rows; r++) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
@@ -3312,8 +3546,7 @@ function generateCutStackSequence(totalPages, cols, rows) {
             }
             frontGrid.push(rowCells);
         }
-
-        // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
+        
         for (var r = 0; r < rows; r++) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
@@ -3324,13 +3557,13 @@ function generateCutStackSequence(totalPages, cols, rows) {
             }
             backGrid.push(rowCells);
         }
-
+        
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             front: frontGrid
         });
-
+        
         seq.sheets.push({
             sheetIndex: s,
             isBack: true,
@@ -3341,23 +3574,22 @@ function generateCutStackSequence(totalPages, cols, rows) {
 }
 
 function generateStepAndRepeatSequence(totalPages, cols, rows) {
-    var perSheet = 2; // front and back
+    var perSheet = 2;
     var totalSheets = Math.ceil(totalPages / perSheet);
-
+    
     var seq = {
         pagesAcross: cols,
         pagesDown: rows,
         sheetsPerSignature: totalSheets,
         sheets: []
     };
-
+    
     for (var s = 0; s < totalSheets; s++) {
         var frontGrid = [];
         var backGrid = [];
         var frontPageNum = s * 2 + 1;
         var backPageNum = s * 2 + 2;
-
-        // Front Grid
+        
         for (var r = 0; r < rows; r++) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
@@ -3365,8 +3597,7 @@ function generateStepAndRepeatSequence(totalPages, cols, rows) {
             }
             frontGrid.push(rowCells);
         }
-
-        // Back Grid
+        
         for (var r = 0; r < rows; r++) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
@@ -3375,13 +3606,13 @@ function generateStepAndRepeatSequence(totalPages, cols, rows) {
             }
             backGrid.push(rowCells);
         }
-
+        
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             front: frontGrid
         });
-
+        
         seq.sheets.push({
             sheetIndex: s,
             isBack: true,
@@ -3395,7 +3626,7 @@ function generateStepAndRepeatSequence(totalPages, cols, rows) {
 // UNIT CONVERSION & DRAW HELPERS
 // ----------------------------------------------------
 function idUnitsToStringUnits(idUnits) {
-    switch (idUnits) {
+    switch(idUnits) {
         case MeasurementUnits.POINTS: return "pt";
         case MeasurementUnits.INCHES: return "in";
         case MeasurementUnits.MILLIMETERS: return "mm";
@@ -3405,18 +3636,16 @@ function idUnitsToStringUnits(idUnits) {
 
 function convertUnits(value, from, to) {
     if (from === to) return value;
-
-    // First convert to points
+    
     var ptVal = 0;
     if (from === "pt") ptVal = value;
     else if (from === "mm") ptVal = value * (72 / 25.4);
     else if (from === "in") ptVal = value * 72;
-
-    // Then convert points to target unit
+    
     if (to === "pt") return ptVal;
     if (to === "mm") return ptVal / (72 / 25.4);
     if (to === "in") return ptVal / 72;
-
+    
     return value;
 }
 
@@ -3443,7 +3672,5 @@ function addLabelAndEditInline(parent, labelText, value, width, labelKey) {
     return edit;
 }
 
-
-
 // Start Script
-runQuickImpose();
+main();

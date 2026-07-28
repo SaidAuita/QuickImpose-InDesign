@@ -1121,357 +1121,21 @@ function runQuickImpose() {
     mainGroup.alignChildren = ["fill", "top"];
     mainGroup.spacing = 15;
 
-    // --- COLUMN 1: LIVE PREVIEW COLUMN (FAR LEFT) ---
-    var previewCol = mainGroup.add("group");
-    previewCol.orientation = "column";
-    previewCol.alignChildren = ["fill", "top"];
-    previewCol.spacing = 6;
-    previewCol.preferredSize.width = 430;
-
-    var grpPreviewHeader = previewCol.add("group");
-    grpPreviewHeader.orientation = "column";
-    grpPreviewHeader.alignChildren = ["left", "top"];
-    grpPreviewHeader.spacing = 2;
-
-    var lblSheetInfo = grpPreviewHeader.add("statictext", undefined, "");
-    lblSheetInfo.preferredSize.width = 430;
-    var lblImpAreaInfo = grpPreviewHeader.add("statictext", undefined, "");
-    lblImpAreaInfo.preferredSize.width = 430;
-    var lblGridInfo = grpPreviewHeader.add("statictext", undefined, "");
-    lblGridInfo.preferredSize.width = 430;
-
-    var canvasW = 430;
-    var canvasH = 490;
-    var canvasGroup = previewCol.add("group");
-    canvasGroup.preferredSize = [canvasW, canvasH];
-    canvasGroup.minimumSize = [canvasW, canvasH];
-    canvasGroup.maximumSize = [canvasW, canvasH];
-    canvasGroup.size = [canvasW, canvasH];
-    canvasGroup.alignment = ["center", "top"];
-
-    // Navigation Controls
-    var navGroup = previewCol.add("group");
-    navGroup.orientation = "row";
-    navGroup.alignChildren = ["center", "center"];
-    navGroup.spacing = 15;
-    navGroup.alignment = ["center", "top"];
-
-    var btnPrevSheet = navGroup.add("button", undefined, "◀");
-    btnPrevSheet.preferredSize = [45, 28];
-
-    var lblSheetNav = navGroup.add("statictext", undefined, "");
-    lblSheetNav.preferredSize.width = 280;
-    lblSheetNav.justify = "center";
-
-    var btnNextSheet = navGroup.add("button", undefined, "▶");
-    btnNextSheet.preferredSize = [45, 28];
-
-    // Live Preview Drawing Logic
-    canvasGroup.onDraw = function () {
-        var g = this.graphics;
-        var w = canvasW;
-        var h = canvasH;
-
-        // 1. Clear Canvas BG with #454545 (RGB: 0.2706, 0.2706, 0.2706)
-        g.newPath();
-        var bgBrush = g.newBrush(g.BrushType.SOLID_COLOR, [0.2706, 0.2706, 0.2706, 1]);
-        g.rectPath(0, 0, w, h);
-        g.fillPath(bgBrush);
-
-        var sheetW = parseFloat(editSheetWidth.text) || docWidth;
-        var sheetH = parseFloat(editSheetHeight.text) || docHeight;
-        var impW = parseFloat(editImpAreaWidth.text) || docWidth;
-        var impH = parseFloat(editImpAreaHeight.text) || docHeight;
-        var cols = parseInt(editCols.text, 10) || 1;
-        var rows = parseInt(editRows.text, 10) || 1;
-        var mLeft = (typeof editMarginLeft !== "undefined" && editMarginLeft) ? (parseFloat(editMarginLeft.text) || 0) : 0;
-        var mTop = (typeof editMarginTop !== "undefined" && editMarginTop) ? (parseFloat(editMarginTop.text) || 0) : 0;
-        var mRight = (typeof editMarginRight !== "undefined" && editMarginRight) ? (parseFloat(editMarginRight.text) || 0) : 0;
-        var mBottom = (typeof editMarginBottom !== "undefined" && editMarginBottom) ? (parseFloat(editMarginBottom.text) || 0) : 0;
-        var sHoriz = (typeof editSpacingHoriz !== "undefined" && editSpacingHoriz) ? (parseFloat(editSpacingHoriz.text) || 0) : 0;
-        var sVert = (typeof editSpacingVert !== "undefined" && editSpacingVert) ? (parseFloat(editSpacingVert.text) || 0) : 0;
-
-        var margin = 25;
-        var maxW = w - (margin * 2);
-        var maxH = h - (margin * 2);
-        var scale = Math.min(maxW / sheetW, maxH / sheetH);
-
-        var sW = sheetW * scale;
-        var sH = sheetH * scale;
-        var sX = (w - sW) / 2;
-        var sY = (h - sH) / 2;
-
-        // 2. Paper Shadow
-        g.newPath();
-        var shadowBrush = g.newBrush(g.BrushType.SOLID_COLOR, [0.08, 0.08, 0.08, 0.5]);
-        g.rectPath(sX + 3, sY + 3, sW, sH);
-        g.fillPath(shadowBrush);
-
-        // 3. Paper Sheet (Pure White)
-        g.newPath();
-        var paperBrush = g.newBrush(g.BrushType.SOLID_COLOR, [1.0, 1.0, 1.0, 1]);
-        var paperPen = g.newPen(g.PenType.SOLID_COLOR, [0.4, 0.4, 0.4, 1], 1);
-        g.rectPath(sX, sY, sW, sH);
-        g.fillPath(paperBrush);
-        g.strokePath(paperPen);
-
-        // 4. Imposition Area Bounding Box (Cyan)
-        var iW = impW * scale;
-        var iH = impH * scale;
-        var iX = sX + (sW - iW) / 2;
-        var iY = sY + (sH - iH) / 2;
-
-        g.newPath();
-        var impPen = g.newPen(g.PenType.SOLID_COLOR, [0.0, 0.55, 0.85, 1], 1.5);
-        g.rectPath(iX, iY, iW, iH);
-        g.strokePath(impPen);
-
-        // 5. Active Sheet Sequence & Grid
-        var sheetObj = activeSheets[currentSheetIdx] || (activeSequence ? activeSequence.sheets[0] : null);
-        var grid = sheetObj ? (sheetObj.front || sheetObj.back) : null;
-        var isBack = sheetObj ? sheetObj.isBack : false;
-        var rotateBacks = (typeof chkRotateBacks !== "undefined" && chkRotateBacks.value);
-
-        if (activeSequence && activeSequence.pagesAcross && activeSequence.pagesDown) {
-            cols = activeSequence.pagesAcross;
-            rows = activeSequence.pagesDown;
-        }
-
-        var totalPgs = docPgsCount || 16;
-        var docW = Math.max(1, (impW - mLeft - mRight - Math.max(0, cols - 1) * sHoriz) / Math.max(1, cols));
-        var docH = Math.max(1, (impH - mTop - mBottom - Math.max(0, rows - 1) * sVert) / Math.max(1, rows));
-
-        var cellBrush = g.newBrush(g.BrushType.SOLID_COLOR, [0.90, 0.94, 1.0, 0.7]);
-        var emptyCellBrush = g.newBrush(g.BrushType.SOLID_COLOR, [0.95, 0.95, 0.95, 0.4]);
-        var cellPen = g.newPen(g.PenType.SOLID_COLOR, [0.25, 0.5, 0.85, 1], 1);
-
-        for (var r = 0; r < rows; r++) {
-            for (var c = 0; c < cols; c++) {
-                var cell = (grid && grid[r]) ? grid[r][c] : null;
-                var pageNum = cell ? cell.pageNum : 0;
-                var cellRotated = cell ? cell.rotated : false;
-                if (isBack && rotateBacks) {
-                    cellRotated = !cellRotated;
-                }
-
-                var cX = iX + (mLeft + c * (docW + sHoriz)) * scale;
-                var cY = iY + (mTop + r * (docH + sVert)) * scale;
-                var cW = docW * scale;
-                var cH = docH * scale;
-
-                g.newPath();
-                g.rectPath(cX, cY, cW, cH);
-                if (pageNum > 0 && pageNum <= totalPgs) {
-                    g.fillPath(cellBrush);
-                } else {
-                    g.fillPath(emptyCellBrush);
-                }
-                g.strokePath(cellPen);
-
-                if (pageNum > 0 && pageNum <= totalPgs) {
-                    var isLandscape = (cW > cH * 1.15);
-                    var aThickness = Math.max(2.0, Math.min(4.5, (isLandscape ? cH : cW) * 0.035));
-                    var aPen = g.newPen(g.PenType.SOLID_COLOR, [0.28, 0.35, 0.48, 0.9], aThickness);
-
-                    if (isLandscape) {
-                        var tL = cX + (cW * 0.05);
-                        var tR = cX + (cW * 0.39);
-                        var tT = cY + (cH * 0.12);
-                        var tB = cY + (cH * 0.88);
-
-                        var apexX = (tL + tR) / 2;
-                        var apexY = cellRotated ? tB : tT;
-                        var bLeftX = tL;
-                        var bLeftY = cellRotated ? tT : tB;
-                        var bRightX = tR;
-                        var bRightY = cellRotated ? tT : tB;
-
-                        var crossY = !cellRotated ? (tT + (tB - tT) * 0.60) : (tT + (tB - tT) * 0.40);
-                        var ratio = !cellRotated ? ((crossY - apexY) / (bLeftY - apexY)) : ((apexY - crossY) / (apexY - bLeftY));
-                        var crossL = apexX + (bLeftX - apexX) * ratio;
-                        var crossR = apexX + (bRightX - apexX) * ratio;
-
-                        g.newPath();
-                        g.moveTo(bLeftX, bLeftY);
-                        g.lineTo(apexX, apexY);
-                        g.lineTo(bRightX, bRightY);
-                        g.strokePath(aPen);
-
-                        g.newPath();
-                        g.moveTo(crossL, crossY);
-                        g.lineTo(crossR, crossY);
-                        g.strokePath(aPen);
-                    } else {
-                        var padW = cW * 0.12;
-                        var padH = cH * 0.08;
-                        var tL = cX + padW;
-                        var tR = cX + cW - padW;
-                        var tT = cY + padH;
-                        var tB = cY + (cH * 0.60);
-
-                        var apexX = cX + cW / 2;
-                        var apexY = cellRotated ? tB : tT;
-                        var bLeftX = tL;
-                        var bLeftY = cellRotated ? tT : tB;
-                        var bRightX = tR;
-                        var bRightY = cellRotated ? tT : tB;
-
-                        var crossY = !cellRotated ? (tT + (tB - tT) * 0.60) : (tT + (tB - tT) * 0.40);
-                        var ratio = !cellRotated ? ((crossY - apexY) / (bLeftY - apexY)) : ((apexY - crossY) / (apexY - bLeftY));
-                        var crossL = apexX + (bLeftX - apexX) * ratio;
-                        var crossR = apexX + (bRightX - apexX) * ratio;
-
-                        g.newPath();
-                        g.moveTo(bLeftX, bLeftY);
-                        g.lineTo(apexX, apexY);
-                        g.lineTo(bRightX, bRightY);
-                        g.strokePath(aPen);
-
-                        g.newPath();
-                        g.moveTo(crossL, crossY);
-                        g.lineTo(crossR, crossY);
-                        g.strokePath(aPen);
-                    }
-
-                    var numStr = pageNum.toString();
-                    drawVectorNumber(g, numStr, cX, cY, cW, cH, isLandscape);
-                } else {
-                    var isLandscape = (cW > cH * 1.15);
-                    drawVectorNumber(g, "-", cX, cY, cW, cH, isLandscape);
-                }
-            }
-        }
-    };
-
-    var activeSequence = null;
-    var activeSheets = [];
-    var currentSheetIdx = 0;
-
-    function recalculateSequence() {
-        var totalPgs = docPgsCount || 16;
-        var cols = (typeof editCols !== "undefined") ? (parseInt(editCols.text, 10) || 1) : 1;
-        var rows = (typeof editRows !== "undefined") ? (parseInt(editRows.text, 10) || 1) : 1;
-        var impIdx = (typeof impTypeDropdown !== "undefined" && impTypeDropdown.selection) ? impTypeDropdown.selection.index : 0;
-        var sheetsPerSig = (typeof editSheetsPerSig !== "undefined") ? (parseInt(editSheetsPerSig.text, 10) || 0) : 0;
-
-        if (impIdx === 0 || impIdx === 1) { // Saddle Stitch or Perfect Bound
-            activeSequence = generateSaddleStitchSequence(totalPgs, sheetsPerSig);
-        } else if (impIdx === 2) {
-            activeSequence = generateConsecutiveSequence(totalPgs, cols, rows);
-        } else if (impIdx === 3) {
-            activeSequence = generateCutStackSequence(totalPgs, cols, rows);
-        } else if (impIdx === 4) {
-            activeSequence = generateStepAndRepeatSequence(totalPgs, cols, rows);
-        } else {
-            activeSequence = generateConsecutiveSequence(totalPgs, cols, rows);
-        }
-
-        activeSheets = [];
-        if (activeSequence && activeSequence.sheets) {
-            for (var i = 0; i < activeSequence.sheets.length; i++) {
-                var sh = activeSequence.sheets[i];
-                var grid = sh.front || sh.back;
-                var hasPgs = false;
-                if (grid) {
-                    for (var r = 0; r < grid.length; r++) {
-                        for (var c = 0; c < grid[r].length; c++) {
-                            if (grid[r][c] && grid[r][c].pageNum > 0 && grid[r][c].pageNum <= totalPgs) {
-                                hasPgs = true;
-                                break;
-                            }
-                        }
-                        if (hasPgs) break;
-                    }
-                }
-                if (hasPgs || i < 2) {
-                    activeSheets.push(sh);
-                }
-            }
-        }
-        if (activeSheets.length === 0 && activeSequence && activeSequence.sheets) {
-            activeSheets = activeSequence.sheets;
-        }
-
-        if (currentSheetIdx >= activeSheets.length) {
-            currentSheetIdx = 0;
-        }
-    }
-
-    function logPreview(msg) { }
-
-    function updateNav() {
-        if (!lblSheetNav || typeof editSheetWidth === "undefined") return;
-        recalculateSequence();
-        var t = translations[currentLang] || translations["en"];
-        var curSheet = activeSheets[currentSheetIdx];
-        var isBackSide = (curSheet && curSheet.isBack);
-        var sideNum = isBackSide ? 2 : 1;
-        var sideNameStr = isBackSide ? (t.lbl_back || "Оборотная") : (t.lbl_front || "Лицевая");
-        var sheetNum = Math.floor(currentSheetIdx / 2) + 1;
-        var totalSheetsCount = Math.max(1, Math.ceil(activeSheets.length / 2));
-
-        var sheetLabelStr = t.lbl_sheet_nav || t.pnl_sheet || "Лист";
-        var ofStr = t.lbl_of || "из";
-        var sideLabelStr = t.lbl_side || "Сторона";
-
-        lblSheetNav.text = sheetLabelStr + " " + sheetNum + " " + ofStr + " " + totalSheetsCount + "  —  " + sideLabelStr + " " + sideNum + " (" + sideNameStr + ")";
-        btnPrevSheet.enabled = (currentSheetIdx > 0);
-        btnNextSheet.enabled = (currentSheetIdx < activeSheets.length - 1);
-
-        var sW = (parseFloat(editSheetWidth.text) || docWidth).toFixed(1);
-        var sH = (parseFloat(editSheetHeight.text) || docHeight).toFixed(1);
-        var iW = (parseFloat(editImpAreaWidth.text) || docWidth).toFixed(1);
-        var iH = (parseFloat(editImpAreaHeight.text) || docHeight).toFixed(1);
-        var cVal = parseInt(editCols.text, 10) || 1;
-        var rVal = parseInt(editRows.text, 10) || 1;
-        var uStr = unitsDropdown.selection ? unitsDropdown.selection.text : "mm";
-
-        var pnlSheetText = (t.pnl_sheet || "Размер печатного листа").replace(/\s*\/.*$/, "");
-        var pnlImpAreaText = (t.pnl_imp_area || "Размер области спуска").replace(/\s*\/.*$/, "");
-        var colsText = (t.lbl_cols || "Колонки (Across)").replace(/:\s*$/, "");
-
-        lblSheetInfo.text = pnlSheetText + ": " + sW + " × " + sH + " " + uStr;
-        lblImpAreaInfo.text = pnlImpAreaText + ": " + iW + " × " + iH + " " + uStr;
-        if (rVal > 1) {
-            var gridLabelText = (t.pnl_grid || "Сетка").replace(/\s*\/.*$/, "");
-            lblGridInfo.text = gridLabelText + " (Across × Down): " + cVal + " × " + rVal;
-        } else {
-            lblGridInfo.text = colsText + ": " + cVal + " × " + rVal;
-        }
-
-        try { canvasGroup.hide(); canvasGroup.show(); } catch (e) { }
-        try { win.update(); } catch (e2) { }
-    }
-
-    btnPrevSheet.onClick = function () {
-        if (currentSheetIdx > 0) {
-            currentSheetIdx--;
-            updateNav();
-        }
-    };
-
-    btnNextSheet.onClick = function () {
-        if (currentSheetIdx < activeSheets.length - 1) {
-            currentSheetIdx++;
-            updateNav();
-        }
-    };
-
-    // --- COLUMN 2: MIDDLE COLUMN ---
+    // Left Column
     var leftCol = mainGroup.add("group");
     leftCol.orientation = "column";
     leftCol.alignChildren = "fill";
     leftCol.spacing = 10;
     leftCol.preferredSize.width = 380;
 
-    // --- COLUMN 3: RIGHT COLUMN ---
+    // Right Column
     var rightCol = mainGroup.add("group");
     rightCol.orientation = "column";
     rightCol.alignChildren = "fill";
     rightCol.spacing = 10;
     rightCol.preferredSize.width = 380;
 
-    // --- MIDDLE COLUMN PANELS ---
+    // --- LEFT COLUMN PANELS ---
     var pnlTypeUnits = leftCol.add("panel", undefined, "Imposition & Units / Спуск и Единицы                                ");
     pnlTypeUnits.alignChildren = "fill";
 
@@ -1479,15 +1143,38 @@ function runQuickImpose() {
     grpImpType.orientation = "row";
     grpImpType.alignChildren = ["fill", "center"];
     var impTypeDropdown = grpImpType.add("dropdownlist", undefined, translations[currentLang].imp_types);
-    impTypeDropdown.preferredSize.width = 270;
+    impTypeDropdown.preferredSize.width = 195;
     impTypeDropdown.selection = 0;
 
     var btnExample = grpImpType.add("button", undefined, translations[currentLang].btn_example || "Пример");
-    btnExample.preferredSize.width = 85;
+    btnExample.preferredSize.width = 68;
     btnExample.alignment = ["right", "center"];
     btnExample.onClick = function () {
         var selIdx = impTypeDropdown.selection ? impTypeDropdown.selection.index : 0;
         showExampleDialog(selIdx);
+    };
+
+    var btnPreview = grpImpType.add("button", undefined, translations[currentLang].btn_preview || "Схема");
+    btnPreview.preferredSize.width = 68;
+    btnPreview.alignment = ["right", "center"];
+    btnPreview.onClick = function () {
+        var params = collectUIParameters();
+        params.sheetW = parseFloat(editSheetWidth.text) || docWidth;
+        params.sheetH = parseFloat(editSheetHeight.text) || docHeight;
+        params.impW = parseFloat(editImpAreaWidth.text) || docWidth;
+        params.impH = parseFloat(editImpAreaHeight.text) || docHeight;
+        params.cols = parseInt(editCols.text, 10) || 1;
+        params.rows = parseInt(editRows.text, 10) || 1;
+        params.docW = docWidth;
+        params.docH = docHeight;
+        params.mLeft = parseFloat(editMarginLeft.text) || 0;
+        params.mTop = parseFloat(editMarginTop.text) || 0;
+        params.mRight = parseFloat(editMarginRight.text) || 0;
+        params.mBottom = parseFloat(editMarginBottom.text) || 0;
+        params.sHoriz = parseFloat(editSpacingHoriz.text) || 0;
+        params.sVert = parseFloat(editSpacingVert.text) || 0;
+        params.unitStr = unitsDropdown.selection.text;
+        showPreviewDialog(params);
     };
 
     var grpUnits = pnlTypeUnits.add("group");
@@ -1825,7 +1512,6 @@ function runQuickImpose() {
             var resetLabelText = (currentLang === "ru") ? "Сброс: " : "Reset: ";
             lblResetInfo.text = resetLabelText + trimW.toFixed(1) + "+" + bleedX.toFixed(1) + " / " + trimH.toFixed(1) + "+" + bleedY.toFixed(1);
         }
-        updateNav();
     }
 
     function getBlockLabelText(count, lang) {
@@ -2001,7 +1687,6 @@ function runQuickImpose() {
             editSheetWidth.enabled = false;
             editSheetHeight.enabled = false;
         }
-        updateNav();
     }
 
     sheetDropdown.onChange = updateFinalSheetSizeFromSelection;
@@ -2023,16 +1708,10 @@ function runQuickImpose() {
         } else {
             updateFinalSheetSizeFromSelection();
         }
-        updateNav();
     };
-    editSheetWidth.onChange = function () { updateNav(); };
-    editSheetHeight.onChange = function () { updateNav(); };
 
     impTypeDropdown.onChange = function () {
-        if (!impTypeDropdown.selection) return;
-        currentSheetIdx = 0;
         var selIdx = impTypeDropdown.selection.index;
-        logPreview("impTypeDropdown.onChange selIdx=" + selIdx + " (" + impTypeDropdown.selection.text + ")");
         if (selIdx === 0 || selIdx === 1) { // Saddle Stitch, Perfect Bound
             editCols.text = "2";
             editRows.text = "1";
@@ -2047,7 +1726,6 @@ function runQuickImpose() {
         toggleCreepPanel();
         toggleResetTrimBleed();
         updateSheetSize();
-        updateNav();
     };
 
     var isApplyingParams = false;
@@ -2497,6 +2175,7 @@ function runQuickImpose() {
             btnDeletePreset.helpTip = t.tip_preset_delete || "Удалить выбранный пресет";
         }
         btnExample.text = t.btn_example || "Пример";
+        btnPreview.text = t.btn_preview || "Схема";
 
         var activeBleedVal = convertUnits(docBleedLeft, "pt", defaultUnitStr);
         var unitLabel = defaultUnitStr;
@@ -2575,13 +2254,10 @@ function runQuickImpose() {
         applyLanguage(currentLang);
     }
 
-    chkRotateBacks.onClick = function () { updateNav(); };
-
     // Initial UI calculation
     updateSheetSize();
     toggleCreepPanel();
     toggleResetTrimBleed();
-    updateNav();
 
     if (win.show() === 1) {
         var userParams = collectUIParameters();

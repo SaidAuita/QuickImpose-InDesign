@@ -1,8 +1,23 @@
-# QuickImpose v1.10
+# QuickImpose v1.2
 
-**QuickImpose** is a professional and fast ExtendScript script for sheet imposition in Adobe InDesign. It supports modern versions of InDesign (tested on version 2026).
+**QuickImpose** is a professional, fast, and feature-rich ExtendScript script for sheet imposition in Adobe InDesign and PDF documents. It supports modern versions of InDesign (tested on version 2026).
 
-![QuickImpose Dialog](images/QuickImpose.png)
+![QuickImpose Full Live Preview](images/QuickImpose.png)
+
+*Figure 1: Full Interface with Interactive Live Imposition Scheme (`QuickImpose.jsx` & `PDF_QuickImpose.jsx`)*
+
+![QuickImpose Compact](images/QuickImpose_min.png)
+
+*Figure 2: Compact Interface for smaller screens (`QuickImpose_min.jsx` & `PDF_QuickImpose_min.jsx`)*
+
+---
+
+## 🚀 What's New in v1.2
+
+* **Interactive Live Scheme Canvas**: Real-time canvas rendering of sheets, imposition bounds, margins, gaps, page cell numbers, and vector orientation marks.
+* **Preset Deletion (🗑)**: Easily delete saved presets with a single click and confirmation safety dialog.
+* **Dual Interface Options**: Choose between the full live preview interface (`QuickImpose.jsx`, `PDF_QuickImpose.jsx`) or the compact interface (`QuickImpose_min.jsx`, `PDF_QuickImpose_min.jsx`).
+* **PDF Import Version**: Dedicated script versions (`PDF_QuickImpose.jsx` / `PDF_QuickImpose_min.jsx`) to impose multi-page PDF files directly into InDesign.
 
 ---
 
@@ -41,18 +56,18 @@
 ### 7. Localization & Presets
 * Native support for **10 languages** (Russian, English, Deutsch, Français, Español, Italiano, Português, Polski, 中文, 日本語).
 * Automatic English fallback for missing localization keys.
-* Saves session options automatically and supports custom named presets.
+* Saves session options automatically and supports custom named presets with deletion button (🗑).
 
 ---
 
 ## 🛠 Installation & Usage
 
-1. Copy `QuickImpose.jsx` and the `RESOURCES` directory to your Adobe InDesign scripts panel directory:
+1. Copy the desired `.jsx` script(s) and the `RESOURCES` directory to your Adobe InDesign scripts panel directory:
    * **Windows**: `C:\Users\<Username>\AppData\Roaming\Adobe\InDesign\Version <Version>\ru_RU\Scripts\Scripts Panel\`
    * **macOS**: `/Users/<Username>/Library/Preferences/Adobe InDesign/Version <Version>/ru_RU/Scripts/Scripts Panel/`
-2. Open the document you want to impose in Adobe InDesign.
+2. Open the document you want to impose in Adobe InDesign (or run `PDF_QuickImpose.jsx` to select a PDF).
 3. Open the **Scripts** panel (Window -> Utilities -> Scripts).
-4. Double-click `QuickImpose.jsx`.
+4. Double-click `QuickImpose.jsx` (or `PDF_QuickImpose.jsx` / `QuickImpose_min.jsx` / `PDF_QuickImpose_min.jsx`).
 5. Configure your layout and click **Impose**.
 
 ---
@@ -60,7 +75,14 @@
 
 ## 🇷🇺 Описание на русском языке (Russian)
 
-**QuickImpose** — это профессиональный и быстрый ExtendScript-скрипт для автоматизации спуска полос (imposition) в Adobe InDesign. Поддерживаются современные версии InDesign (тестировалось на версии 2026).
+**QuickImpose** — это профессиональный, быстрый и многофункциональный ExtendScript-скрипт для автоматизации спуска полос (imposition) в Adobe InDesign и из PDF-файлов. Поддерживаются современные версии InDesign (тестировалось на версии 2026).
+
+### 🚀 Что нового в v1.2
+
+* **Интерактивная схема спуска в реальном времени**: Живой холст визуализации листа, границ спуска, полей, зазоров, нумерации полос и векторной ориентации страниц.
+* **Удаление пресетов (🗑)**: Удобная кнопка удаления сохраненных настроек с подтверждением безопасности.
+* **Два варианта интерфейса**: Полнофункциональная версия со схемой (`QuickImpose.jsx`, `PDF_QuickImpose.jsx`) и компактный интерфейс для экранов с небольшим разрешением (`QuickImpose_min.jsx`, `PDF_QuickImpose_min.jsx`).
+* **Отдельный модуль импорта PDF**: Скрипты `PDF_QuickImpose.jsx` / `PDF_QuickImpose_min.jsx` для прямого спуска полос из многостраничных PDF.
 
 ### 🚀 Основные возможности
 
@@ -97,7 +119,7 @@
 #### 7. Локализация и Сохранение настроек
 * Поддержка **10 языков** (Русский, English, Deutsch, Français, Español, Italiano, Português, Polski, 中文, 日本語).
 * Автоматический английский fallback для недостающих ключей перевода.
-* Сохранение параметров сессии и поддержка именованных пресетов пользователя.
+* Сохранение параметров сессии и поддержка именованных пресетов пользователя с кнопкой удаления (🗑).
 
 ---
 
