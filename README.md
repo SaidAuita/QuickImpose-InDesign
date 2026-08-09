@@ -31,7 +31,7 @@
 Imposition for booklets bound with staples. Automatically gathers reader spreads, supports multi-signature setups, and handles bleed.
 ![Saddle Stitch 2x2](images/Saddle_Stitch_2x2.png)
 
-#### Perfect Bound (КБС)
+#### Perfect Bound (PUR)
 Imposition for adhesive binding or screw post binding. Splits the document into signatures of a specified sheet count, forming spreads with support for creep shifts and hinge mark offsets. 
 Supports varying configurations, including 1 and 2 pages per spread. For 1-page mode, supports 4+0 and 4+4 printing.
 ![Perfect Bound 2 Pages](images/PerfectBound_2pages.png)
