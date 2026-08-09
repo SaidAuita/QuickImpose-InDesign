@@ -124,7 +124,7 @@
   "chk_reset_trim_bleed": "Anschnitt + Beschnitt zurücksetzen",
   "lbl_front": "Vorderseite",
   "lbl_back": "Rückseite",
-  "lbl_sheet_nav": "Bogen {0} von {1} — Seite {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_block_single": "Block ({0} Seite):",
   "lbl_block_multi": "Block ({0} Seiten):",
   "lbl_block_sheet_single": "Block ({0} Bogen):",
@@ -136,6 +136,6 @@
     "16-seitige Broschüre (16 Seiten / Schnitt)",
     "32-seitige Broschüre (32 Seiten / 4 Falze)"
   ],
-  "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_duplex": "4+4 (Beidseitig)",
+  "opt_simplex": "4+0 (Einseitig)"
 }

@@ -124,7 +124,7 @@
   "chk_reset_trim_bleed": "重置裁切 + 出血",
   "lbl_front": "正面",
   "lbl_back": "反面",
-  "lbl_sheet_nav": "印张 {0} / {1} — 面 {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_block_single": "书贴 ({0} 页):",
   "lbl_block_multi": "书贴 ({0} 页):",
   "lbl_block_sheet_single": "书贴 ({0} 张):",
@@ -136,6 +136,6 @@
     "16页小册子（16页/裁切）",
     "32页小册子（32页/4折）"
   ],
-  "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_duplex": "4+4 (双面)",
+  "opt_simplex": "4+0 (单面)"
 }

@@ -533,9 +533,9 @@ function generateFoldSchemeSequence(totalPages, sheetsPerSig, foldSchemeIdx, wor
     return seq;
 }
 
-function generateConsecutiveSequence(totalPages, cols, rows) {
+function generateConsecutiveSequence(totalPages, cols, rows, isSimplex) {
     var perPageSide = cols * rows;
-    var perSheet = perPageSide * 2; // double-sided
+    var perSheet = isSimplex ? perPageSide : (perPageSide * 2);
     var totalSheets = Math.ceil(totalPages / perSheet);
 
     var seq = {
@@ -549,7 +549,7 @@ function generateConsecutiveSequence(totalPages, cols, rows) {
         var frontGrid = [];
         var backGrid = [];
         var startFront = s * perSheet + 1;
-        var startBack = s * perSheet + perPageSide + 1;
+        var startBack = isSimplex ? 0 : (s * perSheet + perPageSide + 1);
 
         // Front Grid
         for (var r = 0; r < rows; r++) {
@@ -560,35 +560,41 @@ function generateConsecutiveSequence(totalPages, cols, rows) {
             frontGrid.push(rowCells);
         }
 
-        // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
-        for (var r = 0; r < rows; r++) {
-            var rowCells = [];
-            for (var c = 0; c < cols; c++) {
-                var mirroredCol = cols - 1 - c;
-                rowCells.push({ pageNum: startBack + r * cols + mirroredCol, rotated: false });
+        if (!isSimplex) {
+            // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
+            for (var r = 0; r < rows; r++) {
+                var rowCells = [];
+                for (var c = 0; c < cols; c++) {
+                    var mirroredCol = cols - 1 - c;
+                    rowCells.push({ pageNum: startBack + r * cols + mirroredCol, rotated: false });
+                }
+                backGrid.push(rowCells);
             }
-            backGrid.push(rowCells);
         }
 
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
-            front: frontGrid
+            front: frontGrid,
+            back: isSimplex ? null : backGrid
         });
 
-        seq.sheets.push({
-            sheetIndex: s,
-            isBack: true,
-            back: backGrid
-        });
+        if (!isSimplex) {
+            seq.sheets.push({
+                sheetIndex: s,
+                isBack: true,
+                workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
+                back: backGrid
+            });
+        }
     }
     return seq;
 }
 
-function generateCutStackSequence(totalPages, cols, rows) {
+function generateCutStackSequence(totalPages, cols, rows, isSimplex) {
     var perPageSide = cols * rows;
-    var perSheet = perPageSide * 2; // double-sided
+    var perSheet = isSimplex ? perPageSide : (perPageSide * 2);
     var totalSheets = Math.ceil(totalPages / perSheet);
 
     var seq = {
@@ -607,42 +613,48 @@ function generateCutStackSequence(totalPages, cols, rows) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
                 var pileIdx = r * cols + c;
-                var pageNum = pileIdx * (2 * totalSheets) + 2 * s + 1;
+                var pageNum = pileIdx * (isSimplex ? totalSheets : (2 * totalSheets)) + (isSimplex ? (s + 1) : (2 * s + 1));
                 rowCells.push({ pageNum: pageNum, rotated: false });
             }
             frontGrid.push(rowCells);
         }
 
-        // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
-        for (var r = 0; r < rows; r++) {
-            var rowCells = [];
-            for (var c = 0; c < cols; c++) {
-                var mirroredCol = cols - 1 - c;
-                var pileIdx = r * cols + mirroredCol;
-                var pageNum = pileIdx * (2 * totalSheets) + 2 * s + 2;
-                rowCells.push({ pageNum: pageNum, rotated: false });
+        if (!isSimplex) {
+            // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
+            for (var r = 0; r < rows; r++) {
+                var rowCells = [];
+                for (var c = 0; c < cols; c++) {
+                    var mirroredCol = cols - 1 - c;
+                    var pileIdx = r * cols + mirroredCol;
+                    var pageNum = pileIdx * (2 * totalSheets) + 2 * s + 2;
+                    rowCells.push({ pageNum: pageNum, rotated: false });
+                }
+                backGrid.push(rowCells);
             }
-            backGrid.push(rowCells);
         }
 
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
-            front: frontGrid
+            front: frontGrid,
+            back: isSimplex ? null : backGrid
         });
 
-        seq.sheets.push({
-            sheetIndex: s,
-            isBack: true,
-            back: backGrid
-        });
+        if (!isSimplex) {
+            seq.sheets.push({
+                sheetIndex: s,
+                isBack: true,
+                workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
+                back: backGrid
+            });
+        }
     }
     return seq;
 }
 
-function generateStepAndRepeatSequence(totalPages, cols, rows) {
-    var perSheet = 2; // front and back
+function generateStepAndRepeatSequence(totalPages, cols, rows, isSimplex) {
+    var perSheet = isSimplex ? 1 : 2;
     var totalSheets = Math.ceil(totalPages / perSheet);
 
     var seq = {
@@ -655,8 +667,8 @@ function generateStepAndRepeatSequence(totalPages, cols, rows) {
     for (var s = 0; s < totalSheets; s++) {
         var frontGrid = [];
         var backGrid = [];
-        var frontPageNum = s * 2 + 1;
-        var backPageNum = s * 2 + 2;
+        var frontPageNum = isSimplex ? (s + 1) : (s * 2 + 1);
+        var backPageNum = isSimplex ? 0 : (s * 2 + 2);
 
         // Front Grid
         for (var r = 0; r < rows; r++) {
@@ -667,28 +679,34 @@ function generateStepAndRepeatSequence(totalPages, cols, rows) {
             frontGrid.push(rowCells);
         }
 
-        // Back Grid
-        for (var r = 0; r < rows; r++) {
-            var rowCells = [];
-            for (var c = 0; c < cols; c++) {
-                var actualPage = (backPageNum <= totalPages) ? backPageNum : 0;
-                rowCells.push({ pageNum: actualPage, rotated: false });
+        if (!isSimplex) {
+            // Back Grid
+            for (var r = 0; r < rows; r++) {
+                var rowCells = [];
+                for (var c = 0; c < cols; c++) {
+                    var actualPage = (backPageNum <= totalPages) ? backPageNum : 0;
+                    rowCells.push({ pageNum: actualPage, rotated: false });
+                }
+                backGrid.push(rowCells);
             }
-            backGrid.push(rowCells);
         }
 
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
-            front: frontGrid
+            front: frontGrid,
+            back: isSimplex ? null : backGrid
         });
 
-        seq.sheets.push({
-            sheetIndex: s,
-            isBack: true,
-            back: backGrid
-        });
+        if (!isSimplex) {
+            seq.sheets.push({
+                sheetIndex: s,
+                isBack: true,
+                workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
+                back: backGrid
+            });
+        }
     }
     return seq;
 }
@@ -1897,13 +1915,16 @@ function runQuickImpose() {
             var foldScheme = (typeof foldSchemeDropdown !== "undefined" && foldSchemeDropdown.selection) ? foldSchemeDropdown.selection.index : 0;
             activeSequence = generateFoldSchemeSequence(totalPgs, sheetsPerSig, foldScheme, (typeof workStyleDropdown !== "undefined" && workStyleDropdown.selection ? workStyleDropdown.selection.index : 0), (impIdx === 0));
         } else if (impIdx === 2) {
-            activeSequence = generateConsecutiveSequence(totalPgs, cols, rows);
+            var fsIdx = (typeof foldSchemeDropdown !== "undefined" && foldSchemeDropdown.selection) ? foldSchemeDropdown.selection.index : 0;
+            activeSequence = generateConsecutiveSequence(totalPgs, cols, rows, fsIdx === 1);
         } else if (impIdx === 3) {
-            activeSequence = generateCutStackSequence(totalPgs, cols, rows);
+            var fsIdx = (typeof foldSchemeDropdown !== "undefined" && foldSchemeDropdown.selection) ? foldSchemeDropdown.selection.index : 0;
+            activeSequence = generateCutStackSequence(totalPgs, cols, rows, fsIdx === 1);
         } else if (impIdx === 4) {
-            activeSequence = generateStepAndRepeatSequence(totalPgs, cols, rows);
+            var fsIdx = (typeof foldSchemeDropdown !== "undefined" && foldSchemeDropdown.selection) ? foldSchemeDropdown.selection.index : 0;
+            activeSequence = generateStepAndRepeatSequence(totalPgs, cols, rows, fsIdx === 1);
         } else {
-            activeSequence = generateConsecutiveSequence(totalPgs, cols, rows);
+            activeSequence = generateConsecutiveSequence(totalPgs, cols, rows, false);
         }
 
         activeSheets = [];
@@ -3313,6 +3334,10 @@ function runQuickImpose() {
             foldSchemeDropdown.enabled = true;
             if (prevSel < foldSchemeDropdown.items.length) foldSchemeDropdown.selection = prevSel;
             else foldSchemeDropdown.selection = 0;
+        } else if (impIdx === 4) { // Step & Repeat
+            foldSchemeDropdown.add("item", t.opt_duplex || "4+4 (Duplex)");
+            foldSchemeDropdown.enabled = false;
+            foldSchemeDropdown.selection = 0;
         } else {
             foldSchemeDropdown.add("item", t.opt_duplex || "4+4 (Duplex)");
             foldSchemeDropdown.add("item", t.opt_simplex || "4+0 (Simplex)");
@@ -4786,14 +4811,14 @@ function executeImposition(srcDoc, params) {
             var foldScheme = params.foldScheme || 0;
             sequence = generateFoldSchemeSequence(totalPgs, params.sheetsPerSig, foldScheme, params.workStyle || 0, (impIdx === 0));
         } else if (impIdx === 2) {
-            sequence = generateConsecutiveSequence(totalPgs, params.cols, params.rows);
+            sequence = generateConsecutiveSequence(totalPgs, params.cols, params.rows, params.foldScheme === 1);
         } else if (impIdx === 3) {
-            sequence = generateCutStackSequence(totalPgs, params.cols, params.rows);
+            sequence = generateCutStackSequence(totalPgs, params.cols, params.rows, params.foldScheme === 1);
         } else if (impIdx === 4) {
-            sequence = generateStepAndRepeatSequence(totalPgs, params.cols, params.rows);
+            sequence = generateStepAndRepeatSequence(totalPgs, params.cols, params.rows, params.foldScheme === 1);
         } else {
             // Fallback
-            sequence = generateConsecutiveSequence(totalPgs, params.cols, params.rows);
+            sequence = generateConsecutiveSequence(totalPgs, params.cols, params.rows, false);
         }
     }
 
@@ -5572,9 +5597,9 @@ var FOLD_MATRICES = {
 
 
 
-function generateConsecutiveSequence(totalPages, cols, rows) {
+function generateConsecutiveSequence(totalPages, cols, rows, isSimplex) {
     var perPageSide = cols * rows;
-    var perSheet = perPageSide * 2; // double-sided
+    var perSheet = isSimplex ? perPageSide : (perPageSide * 2);
     var totalSheets = Math.ceil(totalPages / perSheet);
 
     var seq = {
@@ -5588,7 +5613,7 @@ function generateConsecutiveSequence(totalPages, cols, rows) {
         var frontGrid = [];
         var backGrid = [];
         var startFront = s * perSheet + 1;
-        var startBack = s * perSheet + perPageSide + 1;
+        var startBack = isSimplex ? 0 : (s * perSheet + perPageSide + 1);
 
         // Front Grid
         for (var r = 0; r < rows; r++) {
@@ -5599,35 +5624,41 @@ function generateConsecutiveSequence(totalPages, cols, rows) {
             frontGrid.push(rowCells);
         }
 
-        // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
-        for (var r = 0; r < rows; r++) {
-            var rowCells = [];
-            for (var c = 0; c < cols; c++) {
-                var mirroredCol = cols - 1 - c;
-                rowCells.push({ pageNum: startBack + r * cols + mirroredCol, rotated: false });
+        if (!isSimplex) {
+            // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
+            for (var r = 0; r < rows; r++) {
+                var rowCells = [];
+                for (var c = 0; c < cols; c++) {
+                    var mirroredCol = cols - 1 - c;
+                    rowCells.push({ pageNum: startBack + r * cols + mirroredCol, rotated: false });
+                }
+                backGrid.push(rowCells);
             }
-            backGrid.push(rowCells);
         }
 
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
-            front: frontGrid
+            front: frontGrid,
+            back: isSimplex ? null : backGrid
         });
 
-        seq.sheets.push({
-            sheetIndex: s,
-            isBack: true,
-            back: backGrid
-        });
+        if (!isSimplex) {
+            seq.sheets.push({
+                sheetIndex: s,
+                isBack: true,
+                workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
+                back: backGrid
+            });
+        }
     }
     return seq;
 }
 
-function generateCutStackSequence(totalPages, cols, rows) {
+function generateCutStackSequence(totalPages, cols, rows, isSimplex) {
     var perPageSide = cols * rows;
-    var perSheet = perPageSide * 2; // double-sided
+    var perSheet = isSimplex ? perPageSide : (perPageSide * 2);
     var totalSheets = Math.ceil(totalPages / perSheet);
 
     var seq = {
@@ -5646,42 +5677,48 @@ function generateCutStackSequence(totalPages, cols, rows) {
             var rowCells = [];
             for (var c = 0; c < cols; c++) {
                 var pileIdx = r * cols + c;
-                var pageNum = pileIdx * (2 * totalSheets) + 2 * s + 1;
+                var pageNum = pileIdx * (isSimplex ? totalSheets : (2 * totalSheets)) + (isSimplex ? (s + 1) : (2 * s + 1));
                 rowCells.push({ pageNum: pageNum, rotated: false });
             }
             frontGrid.push(rowCells);
         }
 
-        // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
-        for (var r = 0; r < rows; r++) {
-            var rowCells = [];
-            for (var c = 0; c < cols; c++) {
-                var mirroredCol = cols - 1 - c;
-                var pileIdx = r * cols + mirroredCol;
-                var pageNum = pileIdx * (2 * totalSheets) + 2 * s + 2;
-                rowCells.push({ pageNum: pageNum, rotated: false });
+        if (!isSimplex) {
+            // Back Grid (Horizontally mirrored column c -> cols - 1 - c)
+            for (var r = 0; r < rows; r++) {
+                var rowCells = [];
+                for (var c = 0; c < cols; c++) {
+                    var mirroredCol = cols - 1 - c;
+                    var pileIdx = r * cols + mirroredCol;
+                    var pageNum = pileIdx * (2 * totalSheets) + 2 * s + 2;
+                    rowCells.push({ pageNum: pageNum, rotated: false });
+                }
+                backGrid.push(rowCells);
             }
-            backGrid.push(rowCells);
         }
 
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
-            front: frontGrid
+            front: frontGrid,
+            back: isSimplex ? null : backGrid
         });
 
-        seq.sheets.push({
-            sheetIndex: s,
-            isBack: true,
-            back: backGrid
-        });
+        if (!isSimplex) {
+            seq.sheets.push({
+                sheetIndex: s,
+                isBack: true,
+                workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
+                back: backGrid
+            });
+        }
     }
     return seq;
 }
 
-function generateStepAndRepeatSequence(totalPages, cols, rows) {
-    var perSheet = 2; // front and back
+function generateStepAndRepeatSequence(totalPages, cols, rows, isSimplex) {
+    var perSheet = isSimplex ? 1 : 2;
     var totalSheets = Math.ceil(totalPages / perSheet);
 
     var seq = {
@@ -5694,8 +5731,8 @@ function generateStepAndRepeatSequence(totalPages, cols, rows) {
     for (var s = 0; s < totalSheets; s++) {
         var frontGrid = [];
         var backGrid = [];
-        var frontPageNum = s * 2 + 1;
-        var backPageNum = s * 2 + 2;
+        var frontPageNum = isSimplex ? (s + 1) : (s * 2 + 1);
+        var backPageNum = isSimplex ? 0 : (s * 2 + 2);
 
         // Front Grid
         for (var r = 0; r < rows; r++) {
@@ -5706,28 +5743,34 @@ function generateStepAndRepeatSequence(totalPages, cols, rows) {
             frontGrid.push(rowCells);
         }
 
-        // Back Grid
-        for (var r = 0; r < rows; r++) {
-            var rowCells = [];
-            for (var c = 0; c < cols; c++) {
-                var actualPage = (backPageNum <= totalPages) ? backPageNum : 0;
-                rowCells.push({ pageNum: actualPage, rotated: false });
+        if (!isSimplex) {
+            // Back Grid
+            for (var r = 0; r < rows; r++) {
+                var rowCells = [];
+                for (var c = 0; c < cols; c++) {
+                    var actualPage = (backPageNum <= totalPages) ? backPageNum : 0;
+                    rowCells.push({ pageNum: actualPage, rotated: false });
+                }
+                backGrid.push(rowCells);
             }
-            backGrid.push(rowCells);
         }
 
         seq.sheets.push({
             sheetIndex: s,
             isBack: false,
             workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
-            front: frontGrid
+            front: frontGrid,
+            back: isSimplex ? null : backGrid
         });
 
-        seq.sheets.push({
-            sheetIndex: s,
-            isBack: true,
-            back: backGrid
-        });
+        if (!isSimplex) {
+            seq.sheets.push({
+                sheetIndex: s,
+                isBack: true,
+                workStyle: (typeof workStyleIdx !== "undefined" ? workStyleIdx : 0),
+                back: backGrid
+            });
+        }
     }
     return seq;
 }

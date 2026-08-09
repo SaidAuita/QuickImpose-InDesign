@@ -124,7 +124,7 @@
   "chk_reset_trim_bleed": "Restablecer recorte y sangrado",
   "lbl_front": "Anverso",
   "lbl_back": "Reverso",
-  "lbl_sheet_nav": "Hoja {0} de {1} — Cara {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_block_single": "Bloque ({0} página):",
   "lbl_block_multi": "Bloque ({0} páginas):",
   "lbl_block_sheet_single": "Bloque ({0} hoja):",
@@ -136,6 +136,6 @@
     "Folleto de 16 páginas (16 páginas / corte)",
     "Folleto de 32 páginas (32 páginas / 4 pliegues)"
   ],
-  "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_duplex": "4+4 (Doble cara)",
+  "opt_simplex": "4+0 (Una cara)"
 }

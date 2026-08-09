@@ -124,7 +124,7 @@
   "chk_reset_trim_bleed": "Resetuj przycięcie i spady",
   "lbl_front": "Przód",
   "lbl_back": "Tył",
-  "lbl_sheet_nav": "Arkusz {0} z {1} — Strona {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_block_single": "Blok ({0} strona):",
   "lbl_block_multi": "Blok ({0} stron):",
   "lbl_block_sheet_single": "Blok ({0} arkusz):",
@@ -136,6 +136,6 @@
     "Broszura 16-stronicowa (16 stron / cięcie)",
     "Broszura 32-stronicowa (32 strony / 4 łamy)"
   ],
-  "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_duplex": "4+4 (Dwustronny)",
+  "opt_simplex": "4+0 (Jednostronny)"
 }

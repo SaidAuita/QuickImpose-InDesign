@@ -43,6 +43,7 @@ Repeats the same layout (e.g., business cards or labels) on a sheet. Spacings ar
 
 #### Cut Stack
 Lays out pages in stack order. Designed for print runs that are cut in blocks and stacked on top of each other in correct numerical order.
+![Cut Stack 4+0](images/Cut%20Stack%204+0.png)
 
 ### 2. Smart Spacing & Bleeds (Bleed & Spacing Math)
 * Automatically imports bleed sizes from the source document.

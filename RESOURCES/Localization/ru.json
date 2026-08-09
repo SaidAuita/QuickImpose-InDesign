@@ -113,7 +113,7 @@
   "bleed_short": "вылеты в документе",
   "trim_short": "Чистый размер",
   "chk_ask_bleed_short": "всегда спрашивать про вылеты",
-  "lbl_sheet_nav": "Лист {0} из {1} — Сторона {2} ({3})",
+  "lbl_sheet_nav": "Лист",
   "lbl_of": "из",
   "lbl_side": "Сторона",
   "lbl_front": "Лицо",

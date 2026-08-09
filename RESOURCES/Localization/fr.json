@@ -124,7 +124,7 @@
   "chk_reset_trim_bleed": "Réinit. rognage + fond perdu",
   "lbl_front": "Recto",
   "lbl_back": "Verso",
-  "lbl_sheet_nav": "Feuille {0} sur {1} — Face {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_block_single": "Bloc ({0} page):",
   "lbl_block_multi": "Bloc ({0} pages):",
   "lbl_block_sheet_single": "Bloc ({0} feuille):",
@@ -136,6 +136,6 @@
     "Brochure 16 pages (16 pages / coupe)",
     "Brochure 32 pages (32 pages / 4 plis)"
   ],
-  "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_duplex": "4+4 (Recto-verso)",
+  "opt_simplex": "4+0 (Recto)"
 }

@@ -113,7 +113,7 @@
   "bleed_short": "document bleed",
   "trim_short": "trim size",
   "chk_ask_bleed_short": "ask bleed every time",
-  "lbl_sheet_nav": "Sheet {0} of {1} — Side {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_of": "of",
   "lbl_side": "Side",
   "lbl_front": "Front",

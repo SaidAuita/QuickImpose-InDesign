@@ -124,7 +124,7 @@
   "chk_reset_trim_bleed": "トリムと裁ち落としをリセット",
   "lbl_front": "表面",
   "lbl_back": "裏面",
-  "lbl_sheet_nav": "シート {0} / {1} — 面 {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_block_single": "ブロック ({0} ページ):",
   "lbl_block_multi": "ブロック ({0} ページ):",
   "lbl_block_sheet_single": "ブロック ({0} シート):",
@@ -136,6 +136,6 @@
     "16ページ冊子（16ページ / カット）",
     "32ページ冊子（32ページ / 4つ折り）"
   ],
-  "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_duplex": "4+4 (両面)",
+  "opt_simplex": "4+0 (片面)"
 }

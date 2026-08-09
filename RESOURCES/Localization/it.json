@@ -124,7 +124,7 @@
   "chk_reset_trim_bleed": "Reimposta rifilo e abbondanza",
   "lbl_front": "Fronte",
   "lbl_back": "Retro",
-  "lbl_sheet_nav": "Foglio {0} di {1} — Lato {2} ({3})",
+  "lbl_sheet_nav": "Sheet",
   "lbl_block_single": "Blocco ({0} pagina):",
   "lbl_block_multi": "Blocco ({0} pagine):",
   "lbl_block_sheet_single": "Blocco ({0} foglio):",
@@ -136,6 +136,6 @@
     "Opuscolo 16 pagine (16 pagine / taglio)",
     "Opuscolo 32 pagine (32 pagine / 4 pieghe)"
   ],
-  "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_duplex": "4+4 (Fronte/retro)",
+  "opt_simplex": "4+0 (Solo fronte)"
 }
