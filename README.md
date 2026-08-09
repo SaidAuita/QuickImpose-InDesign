@@ -32,8 +32,8 @@ Imposition for booklets bound with staples. Automatically gathers reader spreads
 ![Saddle Stitch 2x2](images/Saddle_Stitch_2x2.png)
 
 #### Perfect Bound (КБС)
-Imposition for adhesive binding. Splits the document into signatures of a specified sheet count (e.g., 16 or 32 pages), forming spreads without creep shifts. 
-Supports varying layouts like 4x4 (16 pages per spread) or 2 pages per spread.
+Imposition for adhesive binding or screw post binding. Splits the document into signatures of a specified sheet count, forming spreads with support for creep shifts and hinge mark offsets. 
+Supports varying configurations, including 1 and 2 pages per spread. For 1-page mode, supports 4+0 and 4+4 printing.
 ![Perfect Bound 2 Pages](images/PerfectBound_2pages.png)
 ![Perfect Bound 4x4](images/PerfectBound44.png)
 
@@ -109,7 +109,7 @@ Lays out pages in stack order. Designed for print runs that are cut in blocks an
 ![Saddle Stitch 2x2](images/Saddle_Stitch_2x2.png)
 
 **Perfect Bound (КБС)**
-Спуск под клеевое бесшвейное скрепление. Разбивает документ на тетради заданного объема, формируя развороты без сдвигов сползания. Поддерживает различные конфигурации, включая 4х4 и 2 полосы на разворот.
+Спуск под клеевое бесшвейное скрепление или крепление на болты. Разбивает документ на тетради заданного объема, формируя развороты с возможностью сдвигов сползания и сползанием линии биговки. Поддерживает различные конфигурации, включая 1 и 2 полосы на разворот. Для режима 1 полосы — 4+0 и 4+4.
 ![Perfect Bound 2 Pages](images/PerfectBound_2pages.png)
 ![Perfect Bound 4x4](images/PerfectBound44.png)
 
