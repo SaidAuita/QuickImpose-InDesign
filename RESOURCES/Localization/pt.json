@@ -107,5 +107,7 @@
   "work_style_tumble": "Tombar (Work-and-Tumble)",
   "work_style_44": "4+4 (Frente e verso)",
   "work_style_40": "4+0 (Apenas frente)",
+  "kbc_layout_2x1": "2 páginas por folha",
+  "kbc_layout_1x1": "1 página",
     "msg_restart_lang": "Reinicie o script para que as alterações de idioma entrem em vigor."
 }

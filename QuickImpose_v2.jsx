@@ -4006,16 +4006,9 @@ function runQuickImpose() {
         orientationDropdown.add("item", t.orient_vert);
         orientationDropdown.selection = prevOrientSel;
 
-        // Fold Scheme Dropdown
-        if (typeof foldSchemeDropdown !== "undefined" && foldSchemeDropdown) {
-            var prevFoldSel = foldSchemeDropdown.selection ? foldSchemeDropdown.selection.index : 0;
-            foldSchemeDropdown.removeAll();
-            var fSchemes = t.fold_schemes || ["Auto (2-up)", "8 pages (2x2)"];
-            for (var fsIdx = 0; fsIdx < fSchemes.length; fsIdx++) {
-                foldSchemeDropdown.add("item", fSchemes[fsIdx]);
-            }
-            if (prevFoldSel < fSchemes.length) foldSchemeDropdown.selection = prevFoldSel;
-            else foldSchemeDropdown.selection = 0;
+                // Fold Scheme Dropdown
+        if (typeof updateFoldSchemeOptions === "function") {
+            updateFoldSchemeOptions();
         }
 
                 // Work Style Dropdown

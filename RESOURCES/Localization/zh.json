@@ -107,5 +107,7 @@
   "work_style_tumble": "天地翻 (Work-and-Tumble)",
   "work_style_44": "4+4 (双面)",
   "work_style_40": "4+0 (单面)",
+  "kbc_layout_2x1": "跨页2页",
+  "kbc_layout_1x1": "单页",
     "msg_restart_lang": "请重新启动脚本，以使语言更改完全生效。"
 }

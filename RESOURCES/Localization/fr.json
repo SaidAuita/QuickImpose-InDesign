@@ -107,5 +107,7 @@
   "work_style_tumble": "Cahier culbuté (Work-and-Tumble)",
   "work_style_44": "4+4 (Recto-verso)",
   "work_style_40": "4+0 (Recto seul)",
+  "kbc_layout_2x1": "2 pages par planche",
+  "kbc_layout_1x1": "1 page",
     "msg_restart_lang": "Veuillez redémarrer le script pour que les modifications linguistiques prennent effet."
 }

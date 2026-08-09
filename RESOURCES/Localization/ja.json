@@ -107,5 +107,7 @@
   "work_style_tumble": "タテドンテン (Work-and-Tumble)",
   "work_style_44": "4+4 (両面)",
   "work_style_40": "4+0 (片面)",
+  "kbc_layout_2x1": "見開き2ページ",
+  "kbc_layout_1x1": "1ページ",
     "msg_restart_lang": "言語の変更を完全に反映させるには、スクリプトを再起動してください。"
 }

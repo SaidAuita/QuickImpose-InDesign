@@ -107,5 +107,7 @@
   "work_style_tumble": "Work-and-Tumble",
   "work_style_44": "4+4 (Dwustronny)",
   "work_style_40": "4+0 (Jednostronny)",
+  "kbc_layout_2x1": "2 strony na arkusz",
+  "kbc_layout_1x1": "1 strona",
     "msg_restart_lang": "Uruchom ponownie skrypt, aby zmiany języka odniosły skutek."
 }

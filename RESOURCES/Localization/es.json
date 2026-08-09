@@ -107,5 +107,7 @@
   "work_style_tumble": "Voltereta (Work-and-Tumble)",
   "work_style_44": "4+4 (Doble cara)",
   "work_style_40": "4+0 (Una cara)",
+  "kbc_layout_2x1": "2 páginas por pliego",
+  "kbc_layout_1x1": "1 página",
     "msg_restart_lang": "Reinicie el script para que los cambios de idioma surtan efecto."
 }
