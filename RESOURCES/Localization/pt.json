@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Sangria personalizada:",
   "pnl_marks": "Marcas de corte",
   "chk_marks_on": "Desenhar marcas de corte",
+  "lbl_mark_thickness": "Espessura, pt:",
   "lbl_mark_length": "Comprimento:",
   "lbl_mark_offset": "Deslocamento:",
   "btn_cancel": "Cancelar",

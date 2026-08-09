@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "カスタム裁ち落とし:",
   "pnl_marks": "コーナートンボ",
   "chk_marks_on": "コーナートンボを描画",
+  "lbl_mark_thickness": "太さ, pt:",
   "lbl_mark_length": "長さ:",
   "lbl_mark_offset": "空き:",
   "btn_cancel": "キャンセル",

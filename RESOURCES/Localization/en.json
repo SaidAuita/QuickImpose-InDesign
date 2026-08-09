@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Custom bleed:",
   "pnl_marks": "Crop Marks",
   "chk_marks_on": "Draw crop marks",
+  "lbl_mark_thickness": "Thickness, pt:",
   "lbl_mark_length": "Length:",
   "lbl_mark_offset": "Offset:",
   "btn_cancel": "Cancel",

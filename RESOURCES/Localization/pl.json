@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Własny spad:",
   "pnl_marks": "Znaczniki cięcia",
   "chk_marks_on": "Rysuj znaczniki cięcia",
+  "lbl_mark_thickness": "Grubość, pt:",
   "lbl_mark_length": "Długość:",
   "lbl_mark_offset": "Odsunięcie:",
   "btn_cancel": "Anuluj",

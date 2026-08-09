@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Свои вылеты:",
   "pnl_marks": "Метки реза",
   "chk_marks_on": "Отрисовывать метки реза",
+  "lbl_mark_thickness": "Толщина, pt:",
   "lbl_mark_length": "Длина:",
   "lbl_mark_offset": "Отступ:",
   "btn_cancel": "Отмена",

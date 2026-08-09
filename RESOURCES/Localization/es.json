@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Sangrado personalizado:",
   "pnl_marks": "Marcas de corte",
   "chk_marks_on": "Dibujar marcas de corte",
+  "lbl_mark_thickness": "Grosor, pt:",
   "lbl_mark_length": "Longitud:",
   "lbl_mark_offset": "Desplazamiento:",
   "btn_cancel": "Cancelar",

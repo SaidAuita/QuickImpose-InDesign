@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "自定义出血:",
   "pnl_marks": "裁剪线",
   "chk_marks_on": "绘制裁切标记",
+  "lbl_mark_thickness": "粗细, pt:",
   "lbl_mark_length": "线长:",
   "lbl_mark_offset": "偏移:",
   "btn_cancel": "取消",

@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Fonds perdus personnalisés :",
   "pnl_marks": "Repères de coupe",
   "chk_marks_on": "Tracer les repères de coupe",
+  "lbl_mark_thickness": "Épaisseur, pt:",
   "lbl_mark_length": "Longueur :",
   "lbl_mark_offset": "Décalage :",
   "btn_cancel": "Annuler",

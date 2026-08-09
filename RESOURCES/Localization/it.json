@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Abbondanza personalizzata:",
   "pnl_marks": "Crocini di taglio",
   "chk_marks_on": "Disegna crocini di taglio",
+  "lbl_mark_thickness": "Spessore, pt:",
   "lbl_mark_length": "Lunghezza:",
   "lbl_mark_offset": "Offset:",
   "btn_cancel": "Annulla",

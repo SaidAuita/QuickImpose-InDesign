@@ -58,6 +58,7 @@
   "lbl_custom_bleed": "Eigener Beschnitt:",
   "pnl_marks": "Passermarken",
   "chk_marks_on": "Schneidemarken zeichnen",
+  "lbl_mark_thickness": "Dicke, pt:",
   "lbl_mark_length": "Länge:",
   "lbl_mark_offset": "Versatz:",
   "btn_cancel": "Abbrechen",

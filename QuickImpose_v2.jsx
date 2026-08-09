@@ -3896,6 +3896,7 @@ function runQuickImpose() {
         uiLabels.creepInner.text = t.lbl_creep_inner;
         uiLabels.customBleed.text = t.lbl_custom_bleed;
         uiLabels.markLength.text = t.lbl_mark_length;
+        if (uiLabels.markThickness) uiLabels.markThickness.text = t.lbl_mark_thickness || "Thickness, pt:";
         uiLabels.markOffsetTB.text = t.lbl_mark_offset_tb;
         uiLabels.markOffsetLR.text = t.lbl_mark_offset_lr;
 
