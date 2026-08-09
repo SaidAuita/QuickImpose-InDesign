@@ -1,4 +1,4 @@
-﻿function parseSafeFloat(val) {
+function parseSafeFloat(val) {
     if (typeof val === 'string') {
         return parseFloat(val.replace(/,/g, '.'));
     }
@@ -3314,9 +3314,11 @@ function runQuickImpose() {
             if (prevSel < foldSchemeDropdown.items.length) foldSchemeDropdown.selection = prevSel;
             else foldSchemeDropdown.selection = 0;
         } else {
-            foldSchemeDropdown.add("item", t.fold_scheme_auto || "Авто (2 полосы на разворот)");
-            foldSchemeDropdown.selection = 0;
-            foldSchemeDropdown.enabled = false;
+            foldSchemeDropdown.add("item", t.opt_duplex || "4+4 (Duplex)");
+            foldSchemeDropdown.add("item", t.opt_simplex || "4+0 (Simplex)");
+            foldSchemeDropdown.enabled = true;
+            if (prevSel < foldSchemeDropdown.items.length) foldSchemeDropdown.selection = prevSel;
+            else foldSchemeDropdown.selection = 0;
         }
     }
 
