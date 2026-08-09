@@ -1,4 +1,4 @@
-function parseSafeFloat(val) {
+﻿function parseSafeFloat(val) {
     if (typeof val === 'string') {
         return parseFloat(val.replace(/,/g, '.'));
     }
