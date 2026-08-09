@@ -117,5 +117,23 @@
     "tip_compensate_thickness": "用于居中封面的厚度补偿系数 (K)。将封面同向外偏移：最大偏移 = (厚度 / 2) * K",
     "chk_center_mark": "中心 (折痕线)",
     "lbl_mark_offset_tb": "偏移 顶/底",
-    "lbl_mark_offset_lr": "右/左"
+    "lbl_mark_offset_lr": "右/左",
+    "lbl_preview_theme": "预览主题:",
+    "theme_dark": "深色",
+    "theme_light": "浅色",
+    "chk_reset_trim_bleed": "重置裁切 + 出血",
+    "lbl_front": "正面",
+    "lbl_back": "反面",
+    "lbl_sheet_nav": "印张 {0} / {1} — 面 {2} ({3})",
+    "lbl_block_single": "书贴 ({0} 页):",
+    "lbl_block_multi": "书贴 ({0} 页):",
+    "lbl_block_sheet_single": "书贴 ({0} 张):",
+    "lbl_block_sheet_multi": "书贴 ({0} 张):",
+    "fold_schemes": [
+        "自动（每跨页 2 页）",
+        "8页小册子（8页/2折）",
+        "16页小册子（16页/3折）",
+        "16页小册子（16页/裁切）",
+        "32页小册子（32页/4折）"
+    ]
 }

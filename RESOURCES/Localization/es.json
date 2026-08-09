@@ -117,5 +117,23 @@
     "tip_compensate_thickness": "Coeficiente de compensación de grosor (K) para centrar la cubierta. Desplaza la cubierta hacia afuera en: DesplazamientoMax = (Grosor / 2) * K",
     "chk_center_mark": "Centro (línea de pliegue)",
     "lbl_mark_offset_tb": "Desplazamiento Superior/Inferior",
-    "lbl_mark_offset_lr": "Derecha/Izquierda"
+    "lbl_mark_offset_lr": "Derecha/Izquierda",
+    "lbl_preview_theme": "Tema de vista previa:",
+    "theme_dark": "Oscuro",
+    "theme_light": "Claro",
+    "chk_reset_trim_bleed": "Restablecer recorte y sangrado",
+    "lbl_front": "Anverso",
+    "lbl_back": "Reverso",
+    "lbl_sheet_nav": "Hoja {0} de {1} — Cara {2} ({3})",
+    "lbl_block_single": "Bloque ({0} página):",
+    "lbl_block_multi": "Bloque ({0} páginas):",
+    "lbl_block_sheet_single": "Bloque ({0} hoja):",
+    "lbl_block_sheet_multi": "Bloque ({0} hojas):",
+    "fold_schemes": [
+        "Auto (2 páginas por pliego)",
+        "Folleto de 8 páginas (8 páginas / 2 pliegues)",
+        "Folleto de 16 páginas (16 páginas / 3 pliegues)",
+        "Folleto de 16 páginas (16 páginas / corte)",
+        "Folleto de 32 páginas (32 páginas / 4 pliegues)"
+    ]
 }

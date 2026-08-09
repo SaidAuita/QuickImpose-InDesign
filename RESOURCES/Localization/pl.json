@@ -117,5 +117,23 @@
     "tip_compensate_thickness": "Współczynnik kompensacji grubości (K) do wyśrodkowania okładki. Przesuwa okładkę na zewnątrz o: MaksPrzesunięcie = (Grubość / 2) * K",
     "chk_center_mark": "Środek (linia zgięcia)",
     "lbl_mark_offset_tb": "Przesunięcie Góra/Dół",
-    "lbl_mark_offset_lr": "Prawo/Lewo"
+    "lbl_mark_offset_lr": "Prawo/Lewo",
+    "lbl_preview_theme": "Motyw podglądu:",
+    "theme_dark": "Ciemny",
+    "theme_light": "Jasny",
+    "chk_reset_trim_bleed": "Resetuj przycięcie i spady",
+    "lbl_front": "Przód",
+    "lbl_back": "Tył",
+    "lbl_sheet_nav": "Arkusz {0} z {1} — Strona {2} ({3})",
+    "lbl_block_single": "Blok ({0} strona):",
+    "lbl_block_multi": "Blok ({0} stron):",
+    "lbl_block_sheet_single": "Blok ({0} arkusz):",
+    "lbl_block_sheet_multi": "Blok ({0} arkuszy):",
+    "fold_schemes": [
+        "Auto (2 strony na arkusz)",
+        "Broszura 8-stronicowa (8 stron / 2 łamy)",
+        "Broszura 16-stronicowa (16 stron / 3 łamy)",
+        "Broszura 16-stronicowa (16 stron / cięcie)",
+        "Broszura 32-stronicowa (32 strony / 4 łamy)"
+    ]
 }

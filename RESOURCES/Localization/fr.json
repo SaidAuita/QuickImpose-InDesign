@@ -117,5 +117,23 @@
     "tip_compensate_thickness": "Coefficient de compensation d'épaisseur (K) pour centrer la couverture. Décale la couverture vers l'extérieur de : DécalageMax = (Épaisseur / 2) * K",
     "chk_center_mark": "Centre (ligne de pli)",
     "lbl_mark_offset_tb": "Décalage Haut/Bas",
-    "lbl_mark_offset_lr": "Droite/Gauche"
+    "lbl_mark_offset_lr": "Droite/Gauche",
+    "lbl_preview_theme": "Thème d'aperçu:",
+    "theme_dark": "Sombre",
+    "theme_light": "Clair",
+    "chk_reset_trim_bleed": "Réinit. rognage + fond perdu",
+    "lbl_front": "Recto",
+    "lbl_back": "Verso",
+    "lbl_sheet_nav": "Feuille {0} sur {1} — Face {2} ({3})",
+    "lbl_block_single": "Bloc ({0} page):",
+    "lbl_block_multi": "Bloc ({0} pages):",
+    "lbl_block_sheet_single": "Bloc ({0} feuille):",
+    "lbl_block_sheet_multi": "Bloc ({0} feuilles):",
+    "fold_schemes": [
+        "Auto (2 pages par planche)",
+        "Brochure 8 pages (8 pages / 2 plis)",
+        "Brochure 16 pages (16 pages / 3 plis)",
+        "Brochure 16 pages (16 pages / coupe)",
+        "Brochure 32 pages (32 pages / 4 plis)"
+    ]
 }

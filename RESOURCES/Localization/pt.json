@@ -117,5 +117,23 @@
     "tip_compensate_thickness": "Coeficiente de compensação de espessura (K) para centrar a capa. Desloca a capa para fora em: DeslocamentoMax = (Espessura / 2) * K",
     "chk_center_mark": "Centro (linha de dobra)",
     "lbl_mark_offset_tb": "Deslocamento Superior/Inferior",
-    "lbl_mark_offset_lr": "Direita/Esquerda"
+    "lbl_mark_offset_lr": "Direita/Esquerda",
+    "lbl_preview_theme": "Tema de visualização:",
+    "theme_dark": "Escuro",
+    "theme_light": "Claro",
+    "chk_reset_trim_bleed": "Redefinir corte + sangria",
+    "lbl_front": "Frente",
+    "lbl_back": "Verso",
+    "lbl_sheet_nav": "Folha {0} de {1} — Lado {2} ({3})",
+    "lbl_block_single": "Bloco ({0} página):",
+    "lbl_block_multi": "Bloco ({0} páginas):",
+    "lbl_block_sheet_single": "Bloco ({0} folha):",
+    "lbl_block_sheet_multi": "Bloco ({0} folhas):",
+    "fold_schemes": [
+        "Auto (2 páginas por folha)",
+        "Brochura 8 páginas (8 páginas / 2 dobras)",
+        "Brochura 16 páginas (16 páginas / 3 dobras)",
+        "Brochura 16 páginas (16 páginas / corte)",
+        "Brochura 32 páginas (32 páginas / 4 dobras)"
+    ]
 }

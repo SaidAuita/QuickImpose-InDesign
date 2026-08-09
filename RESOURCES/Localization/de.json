@@ -117,5 +117,23 @@
     "tip_compensate_thickness": "Dickenkompensationskoeffizient (K) zur Zentrierung des Umschlags. Verschiebt den Umschlag nach außen um: MaxVersatz = (Dicke / 2) * K",
     "chk_center_mark": "Mitte (Falzlinie)",
     "lbl_mark_offset_tb": "Versatz Oben/Unten",
-    "lbl_mark_offset_lr": "Rechts/Links"
+    "lbl_mark_offset_lr": "Rechts/Links",
+    "lbl_preview_theme": "Vorschau-Design:",
+    "theme_dark": "Dunkel",
+    "theme_light": "Hell",
+    "chk_reset_trim_bleed": "Anschnitt + Beschnitt zurücksetzen",
+    "lbl_front": "Vorderseite",
+    "lbl_back": "Rückseite",
+    "lbl_sheet_nav": "Bogen {0} von {1} — Seite {2} ({3})",
+    "lbl_block_single": "Block ({0} Seite):",
+    "lbl_block_multi": "Block ({0} Seiten):",
+    "lbl_block_sheet_single": "Block ({0} Bogen):",
+    "lbl_block_sheet_multi": "Block ({0} Bogen):",
+    "fold_schemes": [
+        "Auto (2 Seiten pro Bogen)",
+        "8-seitige Broschüre (8 Seiten / 2 Falze)",
+        "16-seitige Broschüre (16 Seiten / 3 Falze)",
+        "16-seitige Broschüre (16 Seiten / Schnitt)",
+        "32-seitige Broschüre (32 Seiten / 4 Falze)"
+    ]
 }

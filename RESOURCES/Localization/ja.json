@@ -117,5 +117,23 @@
     "tip_compensate_thickness": "表紙を中央に配置するための厚み補正係数 (K)。表紙を外側にシフトする量: 最大シフト = (厚み / 2) * K",
     "chk_center_mark": "中央 (折り目)",
     "lbl_mark_offset_tb": "オフセット 上/下",
-    "lbl_mark_offset_lr": "右/左"
+    "lbl_mark_offset_lr": "右/左",
+    "lbl_preview_theme": "プレビューのテーマ:",
+    "theme_dark": "ダーク",
+    "theme_light": "ライト",
+    "chk_reset_trim_bleed": "トリムと裁ち落としをリセット",
+    "lbl_front": "表面",
+    "lbl_back": "裏面",
+    "lbl_sheet_nav": "シート {0} / {1} — 面 {2} ({3})",
+    "lbl_block_single": "ブロック ({0} ページ):",
+    "lbl_block_multi": "ブロック ({0} ページ):",
+    "lbl_block_sheet_single": "ブロック ({0} シート):",
+    "lbl_block_sheet_multi": "ブロック ({0} シート):",
+    "fold_schemes": [
+        "自動（見開き2ページ）",
+        "8ページ冊子（8ページ / 2つ折り）",
+        "16ページ冊子（16ページ / 3つ折り）",
+        "16ページ冊子（16ページ / カット）",
+        "32ページ冊子（32ページ / 4つ折り）"
+    ]
 }

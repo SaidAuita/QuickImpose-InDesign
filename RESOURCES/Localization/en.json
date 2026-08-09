@@ -113,7 +113,7 @@
     "bleed_short": "document bleed",
     "trim_short": "trim size",
     "chk_ask_bleed_short": "ask bleed every time",
-    "lbl_sheet_nav": "Sheet",
+    "lbl_sheet_nav": "Sheet {0} of {1} — Side {2} ({3})",
     "lbl_of": "of",
     "lbl_side": "Side",
     "lbl_front": "Front",
@@ -130,5 +130,19 @@
     "msg_restart_lang": "Please restart the script for the language changes to take full effect.",
     "chk_link_margins": "Uniform Margins",
     "lbl_mark_offset_tb": "Offset Top/Bottom",
-    "lbl_mark_offset_lr": "Right/Left"
+    "lbl_mark_offset_lr": "Right/Left",
+    "lbl_preview_theme": "Preview Theme:",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "lbl_block_single": "Block ({0} page):",
+    "lbl_block_multi": "Block ({0} pages):",
+    "lbl_block_sheet_single": "Block ({0} sheet):",
+    "lbl_block_sheet_multi": "Block ({0} sheets):",
+    "fold_schemes": [
+        "Auto (2 pages per spread)",
+        "8-page brochure (8 pages / 2 folds)",
+        "16-page brochure (16 pages / 3 folds)",
+        "16-page brochure (16 pages / cut)",
+        "32-page brochure (32 pages / 4 folds)"
+    ]
 }
