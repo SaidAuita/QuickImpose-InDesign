@@ -1,11 +1,11 @@
 {
-  "title": "QuickImpose v1.2 — Imposition",
+  "title": "QuickImpose v2.0 — Imposition",
   "file": "File: ",
   "pages": " pages",
   "size": "Size: ",
   "bleeds": "Bleeds: ",
   "about_title": "About QuickImpose",
-  "about_text": "QuickImpose v1.2\n\nOpen-source replacement for IDImposer plugin.\nSupports modern versions of Adobe InDesign.\n\nAuthor: Said & Antigravity.",
+  "about_text": "QuickImpose v2.0\n\nOpen-source replacement for IDImposer plugin.\nSupports modern versions of Adobe InDesign.\n\nAuthor: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Imposition and Units",
   "lbl_imp_type": "Imposition:",
