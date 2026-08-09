@@ -109,5 +109,7 @@
   "work_style_40": "4+0 (Solo fronte)",
   "kbc_layout_2x1": "2 pagine per foglio",
   "kbc_layout_1x1": "1 pagina",
+  "chk_shift_hinge": "Spostamento piega",
+  "chk_sheet_bleed": "+ offset",
     "msg_restart_lang": "Riavvia lo script per rendere effettive le modifiche della lingua."
 }

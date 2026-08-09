@@ -3960,6 +3960,9 @@ function runQuickImpose() {
         chkInfoSlug.helpTip = t.tip_info_slug;
         editSlugFontSize.helpTip = t.tip_slug_font_size;
         chkEnableCreep.text = t.chk_enable_creep;
+        if (typeof chkShiftHinge !== "undefined" && chkShiftHinge) {
+            chkShiftHinge.text = t.chk_shift_hinge || "Сдвиг биговки";
+        }
         chkCompensateThickness.text = t.chk_compensate_thickness || "Thickness Compensation";
         editCompensateCoeff.helpTip = t.tip_compensate_thickness || "Thickness compensation coefficient (K)";
 

@@ -125,5 +125,7 @@
   "work_style_40": "4+0 (Single-sided)",
   "kbc_layout_2x1": "2 pages per spread",
   "kbc_layout_1x1": "1 page",
+  "chk_shift_hinge": "Crease shift",
+  "chk_sheet_bleed": "+ offset",
     "msg_restart_lang": "Please restart the script for the language changes to take full effect."
 }

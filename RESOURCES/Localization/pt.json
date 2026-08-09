@@ -109,5 +109,7 @@
   "work_style_40": "4+0 (Apenas frente)",
   "kbc_layout_2x1": "2 páginas por folha",
   "kbc_layout_1x1": "1 página",
+  "chk_shift_hinge": "Desloc. vinco",
+  "chk_sheet_bleed": "+ desloc.",
     "msg_restart_lang": "Reinicie o script para que as alterações de idioma entrem em vigor."
 }

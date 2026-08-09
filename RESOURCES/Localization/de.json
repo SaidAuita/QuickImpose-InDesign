@@ -109,5 +109,7 @@
   "work_style_40": "4+0 (Einseitig)",
   "kbc_layout_2x1": "2 Seiten pro Druckbogen",
   "kbc_layout_1x1": "1 Seite",
+  "chk_shift_hinge": "Rillversatz",
+  "chk_sheet_bleed": "+ Versatz",
     "msg_restart_lang": "Bitte starten Sie das Skript neu, damit die Sprachänderungen wirksam werden."
 }

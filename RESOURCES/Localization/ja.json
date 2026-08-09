@@ -109,5 +109,7 @@
   "work_style_40": "4+0 (片面)",
   "kbc_layout_2x1": "見開き2ページ",
   "kbc_layout_1x1": "1ページ",
+  "chk_shift_hinge": "折り目シフト",
+  "chk_sheet_bleed": "+ オフセット",
     "msg_restart_lang": "言語の変更を完全に反映させるには、スクリプトを再起動してください。"
 }

@@ -109,5 +109,7 @@
   "work_style_40": "4+0 (单面)",
   "kbc_layout_2x1": "跨页2页",
   "kbc_layout_1x1": "单页",
+  "chk_shift_hinge": "压痕偏移",
+  "chk_sheet_bleed": "+ 偏移",
     "msg_restart_lang": "请重新启动脚本，以使语言更改完全生效。"
 }

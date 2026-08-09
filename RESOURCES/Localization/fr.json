@@ -109,5 +109,7 @@
   "work_style_40": "4+0 (Recto seul)",
   "kbc_layout_2x1": "2 pages par planche",
   "kbc_layout_1x1": "1 page",
+  "chk_shift_hinge": "Décalage de rainage",
+  "chk_sheet_bleed": "+ décalage",
     "msg_restart_lang": "Veuillez redémarrer le script pour que les modifications linguistiques prennent effet."
 }

@@ -109,5 +109,7 @@
   "work_style_40": "4+0 (Jednostronny)",
   "kbc_layout_2x1": "2 strony na arkusz",
   "kbc_layout_1x1": "1 strona",
+  "chk_shift_hinge": "Przesunięcie bigowania",
+  "chk_sheet_bleed": "+ przesunięcie",
     "msg_restart_lang": "Uruchom ponownie skrypt, aby zmiany języka odniosły skutek."
 }
