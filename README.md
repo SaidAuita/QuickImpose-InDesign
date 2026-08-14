@@ -86,6 +86,12 @@ Lays out pages in stack order. Designed for print runs that are cut in blocks an
 5. Configure your layout and click **Impose** / **Import**.
 
 ---
+
+## 🛠️ Other Projects
+
+**[ComfyUI Photoshop Plugin (PH-CU-S)](https://github.com/SaidAuita/ComfyUI_PH-CU-S)**
+* A powerful Photoshop plugin powered by ComfyUI, providing direct integration with local generative models without any clouds, subscriptions, or recurring fees.
+
 ---
 
 ## 🇷🇺 Описание на русском языке (Russian)
@@ -149,3 +155,10 @@ Lays out pages in stack order. Designed for print runs that are cut in blocks an
 
 ## 📄 Лицензия (License)
 Проект распространяется по свободной лицензии MIT. Вы можете использовать, дорабатывать и изменять данный скрипт без ограничений.
+
+---
+
+## 🛠️ Мои проекты
+
+**[ComfyUI Photoshop Plugin (PH-CU-S)](https://github.com/SaidAuita/ComfyUI_PH-CU-S)**
+* Мощный плагин для Photoshop на базе ComfyUI, обеспечивающий прямую интеграцию с локальными генеративными моделями без облаков, подписок и регулярных платежей.
