@@ -60,3 +60,5 @@ Front/Back orientation — проверка ориентации «лицо/об
 C:\_CODE\indesign\QuickImpose-InDesign\test_idml\210x210_24.idml 
 
 Когда все будет готово - выложи на гитхаб правки.
+
+C:\_CODE\indesign\QuickImpose-InDesign\Settings\QuickImpose.joboptions 
