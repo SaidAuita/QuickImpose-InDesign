@@ -15,6 +15,7 @@
 ## 🚀 What's New in v2.1
 
 * **Adobe PDF Export Preset Selection (`.joboptions`)**: Choose any PDF export preset installed in Adobe InDesign (e.g. `[High Quality Print]`, `[Press Quality]`, `PDF/X-4`, `QuickImpose`, etc.) directly from the imposition UI.
+* **Pre-Configured Prepress Preset Included (`Settings/QuickImpose.joboptions`)**: Comes with an optimized export preset tailored for prepress imposition.
 * **Smart Imposition PDF Overrides**: While color spaces, ICC profiles, PDF/X compliance, and transparency flattener rules are inherited from the chosen preset, QuickImpose intelligently enforces rules critical for prepress:
   * **Guaranteed Bleed Preservation**: Automatically forces `useDocumentBleedWithPDF = true` (or custom user bleed) to prevent accidental cropping even if the selected preset has 0 mm bleed.
   * **Lossless Intermediate Quality**: Disables lossy downsampling (`Sampling.NONE`, `ZIP` compression) for intermediate PDF pages to eliminate raster/vector compression artifacts.
@@ -81,11 +82,26 @@ Lays out pages in stack order. Designed for print runs that are cut in blocks an
 * Saves session options automatically and supports custom named presets.
 * Generates localized Imposition Job Reports (.txt).
 
+### 8. Recommended PDF Export Preset (`Settings/QuickImpose.joboptions`)
+
+A dedicated prepress export preset is provided in the repository: `Settings/QuickImpose.joboptions`.
+
+#### How to Install the Preset in InDesign:
+* **Option A (Via InDesign Menu)**:
+  1. In Adobe InDesign, go to **File → Adobe PDF Presets → Define...**
+  2. Click **Load...** and select `Settings/QuickImpose.joboptions`.
+* **Option B (Direct System Folder)**:
+  * Copy `QuickImpose.joboptions` into the standard Adobe PDF settings directory:
+    * **Windows**: `C:\Users\<Username>\AppData\Roaming\Adobe\Adobe PDF\Settings\`
+    * **macOS**: `/Users/<Username>/Library/Application Support/Adobe/Adobe PDF/Settings/`
+
+Once installed, **QuickImpose** will be selectable in the PDF Export Preset dropdown within the script.
+
 ---
 
 ## 🛠 Installation & Usage
 
-1. Copy the `.jsx` scripts (`QuickImpose_v2.jsx` and `PDF_Import.jsx`) and the `RESOURCES` directory to your Adobe InDesign scripts panel directory:
+1. Copy the `.jsx` scripts (`QuickImpose_v2.jsx` and `PDF_Import.jsx`), the `RESOURCES` directory, and the `Settings` directory to your Adobe InDesign scripts panel directory:
    * **Windows**: `C:\Users\<Username>\AppData\Roaming\Adobe\InDesign\Version <Version>\ru_RU\Scripts\Scripts Panel\`
    * **macOS**: `/Users/<Username>/Library/Preferences/Adobe InDesign/Version <Version>/ru_RU/Scripts/Scripts Panel/`
 2. Open the document you want to impose in Adobe InDesign (or use the test document `test_idml/210x210_24.idml`).
@@ -109,6 +125,7 @@ Lays out pages in stack order. Designed for print runs that are cut in blocks an
 ### 🚀 Что нового в v2.1
 
 * **Выбор пресета экспорта Adobe PDF (.joboptions)**: Выбор любого установленного пресета экспорта PDF (по умолчанию `[High Quality Print]` или пользовательские пресеты `QuickImpose`) прямо в окне спуска.
+* **Готовый полиграфический пресет (`Settings/QuickImpose.joboptions`)**: В проект включен оптимизированный `.joboptions` файл для надежного экспорта.
 * **Умная оптимизация и гарантия вылетов для спуска (Imposition Overrides)**: При использовании пресета параметры цветовых профилей, PDF/X стандартов и настроек прозрачности берутся из выбранного профиля, но скрипт принудительно включает:
   * **Гарантированные вылеты**: Принудительно включает `useDocumentBleedWithPDF = true` (или пользовательские вылеты), исключая обрезку макета, даже если в пресете задан 0 мм вылет.
   * **Качество без потерь**: Отключает даунсэмплинг (`Sampling.NONE`, сжатие `ZIP`) для промежуточного PDF, предотвращая потерю качества растра и векторов.
@@ -167,6 +184,21 @@ Lays out pages in stack order. Designed for print runs that are cut in blocks an
 * Поддержка **10 языков** (Русский, English, Deutsch, Français, Español, Italiano, Português, Polski, 中文, 日本語).
 * Сохранение параметров сессии и поддержка именованных пресетов.
 * Генерация детальных Job Report отчетов о спуске.
+
+#### 8. Рекомендуемый пресет экспорта PDF (`Settings/QuickImpose.joboptions`)
+
+В комплект поставки скрипта входит готовый пресет экспорта Adobe PDF: `Settings/QuickImpose.joboptions`, специально настроенный для надежного и качественного спуска полос в полиграфии.
+
+#### Как установить пресет в Adobe InDesign:
+* **Способ 1 (Через меню InDesign)**:
+  1. В верхнем меню InDesign выберите: **Файл → Пресеты Adobe PDF → Определить...** (File → Adobe PDF Presets → Define...)
+  2. Нажмите **Загрузить...** (Load...) и выберите файл `Settings/QuickImpose.joboptions`.
+* **Способ 2 (Копирование в системную папку)**:
+  * Скопируйте файл `QuickImpose.joboptions` в стандартную папку настроек Adobe PDF:
+    * **Windows**: `C:\Users\<Username>\AppData\Roaming\Adobe\Adobe PDF\Settings\`
+    * **macOS**: `/Users/<Username>/Library/Application Support/Adobe/Adobe PDF/Settings/`
+
+После установки пресет **QuickImpose** появится в списке пресетов InDesign и станет доступен в выпадающем списке интерфейса скрипта.
 
 ---
 
