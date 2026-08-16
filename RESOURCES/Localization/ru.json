@@ -1,11 +1,11 @@
 {
-  "title": "QuickImpose v2.0 — Спуск полос",
+  "title": "QuickImpose v2.1 — Спуск полос",
   "file": "Файл: ",
   "pages": " стр.",
   "size": "Размер: ",
   "bleeds": "Вылеты: ",
   "about_title": "О программе QuickImpose",
-  "about_text": "QuickImpose v2.0\n\nОткрытая замена для плагина IDImposer.\nПоддерживает современные версии Adobe InDesign.\n\nАвтор: Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nОткрытая замена для плагина IDImposer.\nПоддерживает современные версии Adobe InDesign.\n\nАвтор: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Спуск и Единицы",
   "lbl_imp_type": "Тип спуска:",
@@ -140,11 +140,13 @@
   "lbl_block_sheet_multi": "Блок ({0} листов):",
   "fold_schemes": [
     "Авто (2 полосы на разворот)",
-    "8-страничная брошюра (8 полос / 2 сгиба)",
-    "16-страничная брошюра (16 полос / 3 сгиба)",
-    "16-страничная брошюра (16 полос / рез)",
-    "32-страничная брошюра (32 полосы / 4 сгиба)"
+    "8-страничная брошюра (8 полос / 2 сгиба)"
   ],
   "opt_duplex": "4+4 (Двусторонняя)",
-  "opt_simplex": "4+0 (Односторонняя)"
+  "opt_simplex": "4+0 (Односторонняя)",
+  "pnl_pdf_export": "Экспорт в PDF",
+  "lbl_pdf_preset": "PDF Пресет:",
+  "chk_job_report": "Создавать технический отчет (Job Report .txt)",
+  "msg_job_report_saved": "Отчет о спуске сохранен в файл:\n",
+  "msg_open_job_report": "Открыть созданный отчет сейчас?"
 }

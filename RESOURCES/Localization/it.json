@@ -5,7 +5,7 @@
   "size": "Dimensione: ",
   "bleeds": "Abbondanza: ",
   "about_title": "Informazioni su QuickImpose",
-  "about_text": "QuickImpose v2.0\n\nSostituto open-source per il plugin IDImposer.\nSupporta le versioni moderne di Adobe InDesign.\n\nAutore: Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nSostituto open-source per il plugin IDImposer.\nSupporta le versioni moderne di Adobe InDesign.\n\nAutore: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Imposizione e Unità",
   "lbl_imp_type": "Imposizione:",
@@ -130,12 +130,14 @@
   "lbl_block_sheet_single": "Blocco ({0} foglio):",
   "lbl_block_sheet_multi": "Blocco ({0} fogli):",
   "fold_schemes": [
-    "Auto (2 pagine per foglio)",
-    "Opuscolo 8 pagine (8 pagine / 2 pieghe)",
-    "Opuscolo 16 pagine (16 pagine / 3 pieghe)",
-    "Opuscolo 16 pagine (16 pagine / taglio)",
-    "Opuscolo 32 pagine (32 pagine / 4 pieghe)"
+    "Automatico (2 pagine per segnatura)",
+    "Opuscolo a 8 pagine (8 pagine / 2 pieghe)"
   ],
   "opt_duplex": "4+4 (Fronte/retro)",
-  "opt_simplex": "4+0 (Solo fronte)"
+  "opt_simplex": "4+0 (Solo fronte)",
+  "pnl_pdf_export": "Esportazione PDF",
+  "lbl_pdf_preset": "Predefinito PDF:",
+  "chk_job_report": "Genera report di imposizione (Job Report .txt)",
+  "msg_job_report_saved": "Report di imposizione salvato in:\n",
+  "msg_open_job_report": "Aprire il report di lavoro adesso?"
 }

@@ -1,11 +1,11 @@
 {
-  "title": "QuickImpose v2.0 — Imposition",
+  "title": "QuickImpose v2.1 — Imposition",
   "file": "File: ",
   "pages": " pages",
   "size": "Size: ",
   "bleeds": "Bleeds: ",
   "about_title": "About QuickImpose",
-  "about_text": "QuickImpose v2.0\n\nOpen-source replacement for IDImposer plugin.\nSupports modern versions of Adobe InDesign.\n\nAuthor: Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nOpen-source replacement for IDImposer plugin.\nSupports modern versions of Adobe InDesign.\n\nAuthor: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Imposition and Units",
   "lbl_imp_type": "Imposition:",
@@ -140,11 +140,13 @@
   "lbl_block_sheet_multi": "Block ({0} sheets):",
   "fold_schemes": [
     "Auto (2 pages per spread)",
-    "8-page brochure (8 pages / 2 folds)",
-    "16-page brochure (16 pages / 3 folds)",
-    "16-page brochure (16 pages / cut)",
-    "32-page brochure (32 pages / 4 folds)"
+    "8-page brochure (8 pages / 2 folds)"
   ],
   "opt_duplex": "4+4 (Duplex)",
-  "opt_simplex": "4+0 (Simplex)"
+  "opt_simplex": "4+0 (Simplex)",
+  "pnl_pdf_export": "PDF Export",
+  "lbl_pdf_preset": "PDF Preset:",
+  "chk_job_report": "Generate Imposition Job Report (.txt)",
+  "msg_job_report_saved": "Imposition Job Report saved to:\n",
+  "msg_open_job_report": "Open Job Report now?"
 }

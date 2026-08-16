@@ -5,7 +5,7 @@
   "size": "尺寸: ",
   "bleeds": "出血: ",
   "about_title": "关于 QuickImpose",
-  "about_text": "QuickImpose v2.0\n\nIDImposer 插件的开源替代方案。\n支持 Adobe InDesign 的现代版本。\n\n作者: Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nIDImposer 插件的开源替代方案。\n支持 Adobe InDesign 的现代版本。\n\n作者: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "拼版和单位",
   "lbl_imp_type": "拼版方式:",
@@ -131,11 +131,13 @@
   "lbl_block_sheet_multi": "书贴 ({0} 张):",
   "fold_schemes": [
     "自动（每跨页 2 页）",
-    "8页小册子（8页/2折）",
-    "16页小册子（16页/3折）",
-    "16页小册子（16页/裁切）",
-    "32页小册子（32页/4折）"
+    "8页小册子（8页 / 2折）"
   ],
   "opt_duplex": "4+4 (双面)",
-  "opt_simplex": "4+0 (单面)"
+  "opt_simplex": "4+0 (单面)",
+  "pnl_pdf_export": "PDF 导出",
+  "lbl_pdf_preset": "PDF 预设:",
+  "chk_job_report": "生成拼版作业报告 (.txt)",
+  "msg_job_report_saved": "拼版作业报告已保存至：\n",
+  "msg_open_job_report": "是否立即打开作业报告？"
 }

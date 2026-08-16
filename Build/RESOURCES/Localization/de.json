@@ -5,7 +5,7 @@
   "size": "Größe: ",
   "bleeds": "Beschnitt: ",
   "about_title": "Über QuickImpose",
-  "about_text": "QuickImpose v2.0\n\nOpen-Source-Ersatz für das IDImposer-Plugin.\nUnterstützt moderne Versionen von Adobe InDesign.\n\nAutor: Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nOpen-Source-Ersatz für das IDImposer-Plugin.\nUnterstützt moderne Versionen von Adobe InDesign.\n\nAutor: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Ausschießung und Einheiten",
   "lbl_imp_type": "Ausschießung:",
@@ -130,12 +130,14 @@
   "lbl_block_sheet_single": "Block ({0} Bogen):",
   "lbl_block_sheet_multi": "Block ({0} Bogen):",
   "fold_schemes": [
-    "Auto (2 Seiten pro Bogen)",
-    "8-seitige Broschüre (8 Seiten / 2 Falze)",
-    "16-seitige Broschüre (16 Seiten / 3 Falze)",
-    "16-seitige Broschüre (16 Seiten / Schnitt)",
-    "32-seitige Broschüre (32 Seiten / 4 Falze)"
+    "Automatisch (2 Seiten pro Bogen)",
+    "8-Seiten-Broschüre (8 Seiten / 2 Falze)"
   ],
   "opt_duplex": "4+4 (Beidseitig)",
-  "opt_simplex": "4+0 (Einseitig)"
+  "opt_simplex": "4+0 (Einseitig)",
+  "pnl_pdf_export": "PDF-Export",
+  "lbl_pdf_preset": "PDF-Vorgabe:",
+  "chk_job_report": "Ausschießbericht erstellen (Job Report .txt)",
+  "msg_job_report_saved": "Ausschießbericht gespeichert unter:\n",
+  "msg_open_job_report": "Ausschießbericht jetzt öffnen?"
 }

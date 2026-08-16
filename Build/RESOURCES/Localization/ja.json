@@ -5,7 +5,7 @@
   "size": "サイズ: ",
   "bleeds": "裁ち落とし: ",
   "about_title": "QuickImpose について",
-  "about_text": "QuickImpose v2.0\n\nIDImposer プラグインのオープンソース代替ソフト。\n現代的な Adobe InDesign バージョンをサポートします。\n\n作成者: Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nIDImposer プラグインのオープンソース代替ソフト。\n現代的な Adobe InDesign バージョンをサポートします。\n\n作成者: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "面付けと単位",
   "lbl_imp_type": "面付け種類:",
@@ -131,11 +131,13 @@
   "lbl_block_sheet_multi": "ブロック ({0} シート):",
   "fold_schemes": [
     "自動（見開き2ページ）",
-    "8ページ冊子（8ページ / 2つ折り）",
-    "16ページ冊子（16ページ / 3つ折り）",
-    "16ページ冊子（16ページ / カット）",
-    "32ページ冊子（32ページ / 4つ折り）"
+    "8ページ冊子（8ページ / 2折）"
   ],
   "opt_duplex": "4+4 (両面)",
-  "opt_simplex": "4+0 (片面)"
+  "opt_simplex": "4+0 (片面)",
+  "pnl_pdf_export": "PDF書き出し",
+  "lbl_pdf_preset": "PDFプリセット:",
+  "chk_job_report": "面付けジョブレポートを作成 (.txt)",
+  "msg_job_report_saved": "面付けジョブレポートが保存されました:\n",
+  "msg_open_job_report": "今すぐジョブレポートを開きますか？"
 }

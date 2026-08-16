@@ -4,3 +4,6 @@ RESOURCES/Data/Presets/
 .Build_version/
 .agents/
 .test/
+.temp/
+Old_Build/
+*.code-workspace

@@ -33,6 +33,60 @@ function getQiDocName(selectedPdf, srcDoc) {
     return cleanFileName(rawName);
 }
 
+function getPdfPresetNames() {
+    var list = [];
+    try {
+        if (typeof app !== "undefined" && app.pdfExportPresets) {
+            var names = app.pdfExportPresets.everyItem().name;
+            for (var i = 0; i < names.length; i++) {
+                list.push(names[i]);
+            }
+        }
+    } catch (e) { }
+    if (list.length === 0) {
+        list = ["[High Quality Print]", "[Press Quality]", "[Smallest File Size]"];
+    }
+    return list;
+}
+
+function findDefaultPdfPresetIndex(names) {
+    if (!names || names.length === 0) return 0;
+    for (var i = 0; i < names.length; i++) {
+        var n = names[i];
+        if (n.indexOf("High Quality Print") !== -1 || n.indexOf("Высокое качество печати") !== -1) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+function getSelectedPdfPreset(presetName) {
+    var pdfPreset = null;
+    if (presetName && typeof app !== "undefined" && app.pdfExportPresets) {
+        try {
+            pdfPreset = app.pdfExportPresets.itemByName(presetName);
+            if (pdfPreset && pdfPreset.isValid) return pdfPreset;
+        } catch (e) { }
+    }
+    try {
+        pdfPreset = app.pdfExportPresets.itemByName("[High Quality Print]");
+        if (pdfPreset && pdfPreset.isValid) return pdfPreset;
+    } catch (e) { }
+    try {
+        pdfPreset = app.pdfExportPresets.itemByName("High Quality Print");
+        if (pdfPreset && pdfPreset.isValid) return pdfPreset;
+    } catch (e) { }
+    try {
+        pdfPreset = app.pdfExportPresets.itemByName("[Высокое качество печати]");
+        if (pdfPreset && pdfPreset.isValid) return pdfPreset;
+    } catch (e) { }
+    try {
+        pdfPreset = app.pdfExportPresets[0];
+        if (pdfPreset && pdfPreset.isValid) return pdfPreset;
+    } catch (e) { }
+    return null;
+}
+
 // #target indesign
 // QuickImpose.jsx
 // An open-source imposition script for Adobe InDesign.
@@ -42,12 +96,12 @@ var uiLabels = {};
 
 var translations = {
     ru: {
-        title: "QuickImpose v2.0 — Спуск полос",
+        title: "QuickImpose v2.1 — Спуск полос",
         file: "Файл: ",
         pages: " стр.",
         size: "Размер: ",
         bleeds: "Вылеты: ",
-        about_text: "QuickImpose v2.0\n\nПоддерживаются современные версии Adobe InDesign.\nТестировалось на версии 2026.\n\nАвтор: Said & Antigravity.",
+        about_text: "QuickImpose v2.1\n\nПоддерживаются современные версии Adobe InDesign.\nТестировалось на версии 2026.\n\nАвтор: Said & Antigravity.",
         btn_about: "?",
         pnl_type_units: "Спуск и Единицы",
         lbl_imp_type: "Тип спуска:",
@@ -103,6 +157,11 @@ var translations = {
         lbl_mark_thickness: "Толщина, pt:",
         lbl_mark_offset_tb: "Отступ верх, низ",
         lbl_mark_offset_lr: "право, лево",
+        pnl_pdf_export: "Экспорт в PDF",
+        lbl_pdf_preset: "PDF Пресет:",
+        chk_job_report: "Создавать технический отчет (Job Report .txt)",
+        msg_job_report_saved: "Отчет о спуске сохранен в файл:\n",
+        msg_open_job_report: "Открыть созданный отчет сейчас?",
         btn_cancel: "Отмена",
         btn_impose: "Спуск полос",
         lbl_author_link: "Автор: github.com/SaidAuita/QuickImpose-InDesign",
@@ -161,12 +220,12 @@ var translations = {
         theme_light: "Светлая"
     },
     en: {
-        title: "QuickImpose v2.0 — Imposition",
+        title: "QuickImpose v2.1 — Imposition",
         file: "File: ",
         pages: " pages",
         size: "Size: ",
         bleeds: "Bleeds: ",
-        about_text: "QuickImpose v2.0\n\nSupports modern versions of Adobe InDesign.\nTested on version 2026.\n\nAuthor: Said & Antigravity.",
+        about_text: "QuickImpose v2.1\n\nSupports modern versions of Adobe InDesign.\nTested on version 2026.\n\nAuthor: Said & Antigravity.",
         btn_about: "?",
         pnl_type_units: "Imposition and Units",
         lbl_imp_type: "Imposition:",
@@ -222,6 +281,11 @@ var translations = {
         lbl_mark_thickness: "Thickness, pt:",
         lbl_mark_offset_tb: "Offset Top/Bottom",
         lbl_mark_offset_lr: "Right/Left",
+        pnl_pdf_export: "PDF Export",
+        lbl_pdf_preset: "PDF Preset:",
+        chk_job_report: "Generate Imposition Job Report (.txt)",
+        msg_job_report_saved: "Imposition Job Report saved to:\n",
+        msg_open_job_report: "Open Job Report now?",
         btn_cancel: "Cancel",
         btn_impose: "Impose",
         lbl_author_link: "Author: github.com/SaidAuita/QuickImpose-InDesign",
@@ -789,6 +853,7 @@ function runQuickImpose() {
     var coverDropdown, blockDropdown, creepDirDropdown;
     var chkEnableCreep, chkShiftHinge, chkCompensateThickness, editCompensateCoeff;
     var editSheetsPerSig, editPurHinge, chkRotateBacks, chkResetTrimBleed;
+    var pnlPdfExport, pdfExportPresetDropdown, chkJobReport;
     try {
         if (app.documents.length > 0) {
             try {
@@ -2446,7 +2511,23 @@ function runQuickImpose() {
         if (typeof updateSheetSize === "function") updateSheetSize();
     };
 
-    // PDF Export Preset Panel removed as it's no longer used
+    // PDF Export Preset Panel
+    var pnlPdfExport = rightCol.add("panel", undefined, translations[currentLang].pnl_pdf_export || "PDF Export / Экспорт в PDF");
+    pnlPdfExport.alignChildren = "fill";
+
+    var grpPdfExportPreset = pnlPdfExport.add("group");
+    grpPdfExportPreset.orientation = "row";
+    grpPdfExportPreset.alignChildren = ["left", "center"];
+    uiLabels.pdfExportPreset = grpPdfExportPreset.add("statictext", undefined, translations[currentLang].lbl_pdf_preset || "PDF Preset:");
+    uiLabels.pdfExportPreset.characters = 10;
+
+    var pdfPresetNamesList = getPdfPresetNames();
+    var pdfExportPresetDropdown = grpPdfExportPreset.add("dropdownlist", undefined, pdfPresetNamesList);
+    pdfExportPresetDropdown.preferredSize.width = 220;
+    pdfExportPresetDropdown.selection = findDefaultPdfPresetIndex(pdfPresetNamesList);
+
+    var chkJobReport = pnlPdfExport.add("checkbox", undefined, translations[currentLang].chk_job_report || "Создавать технический отчет (Job Report .txt)");
+    chkJobReport.value = true;
 
     // Hyperlink helper
     function openURL(url) {
@@ -2606,6 +2687,7 @@ function runQuickImpose() {
     }
 
     function getBlockLabelText(count, lang, is1x1KBC) {
+        var t = (typeof translations !== "undefined" && translations && translations[lang]) ? translations[lang] : {};
         if (is1x1KBC) {
             if (lang === "ru") {
                 var word = "полос";
@@ -2614,10 +2696,14 @@ function runQuickImpose() {
                 if (lastDigit === 1 && lastTwoDigits !== 11) word = "полоса";
                 else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 10 || lastTwoDigits >= 20)) word = "полосы";
                 return "Блок (" + count + " " + word + "):";
-            } else {
-                var word = count === 1 ? "page" : "pages";
-                return "Block (" + count + " " + word + "):";
             }
+            if (count === 1 && t.lbl_block_single) {
+                return t.lbl_block_single.replace("{0}", count);
+            } else if (t.lbl_block_multi) {
+                return t.lbl_block_multi.replace("{0}", count);
+            }
+            var word = count === 1 ? "page" : "pages";
+            return (t.lbl_block ? t.lbl_block.replace(":", "") : "Block") + " (" + count + " " + word + "):";
         }
         if (lang === "ru") {
             var word = "листов";
@@ -2629,10 +2715,14 @@ function runQuickImpose() {
                 word = "листа";
             }
             return "Блок (" + count + " " + word + "):";
-        } else {
-            var word = count === 1 ? "sheet" : "sheets";
-            return "Block (" + count + " " + word + "):";
         }
+        if (count === 1 && t.lbl_block_sheet_single) {
+            return t.lbl_block_sheet_single.replace("{0}", count);
+        } else if (t.lbl_block_sheet_multi) {
+            return t.lbl_block_sheet_multi.replace("{0}", count);
+        }
+        var word = count === 1 ? "sheet" : "sheets";
+        return (t.lbl_block ? t.lbl_block.replace(":", "") : "Block") + " (" + count + " " + word + "):";
     }
 
 
@@ -3321,7 +3411,7 @@ function runQuickImpose() {
 
         foldSchemeDropdown.removeAll();
         if (impIdx === 0) { // Saddle Stitch
-            var fSchemes = t.fold_schemes || ["Авто (2 полосы на разворот)", "8-page brochure (8 полос / 2 сгиба)", "16-page brochure (16 полос / 3 сгиба)", "16-page brochure (16 полос / Альт)", "32-page brochure (32 полосы / 4 сгиба)"];
+            var fSchemes = t.fold_schemes || ["Авто (2 полосы на разворот)", "8-страничная брошюра (8 полос / 2 сгиба)"];
             for (var fsIdx = 0; fsIdx < fSchemes.length; fsIdx++) {
                 foldSchemeDropdown.add("item", fSchemes[fsIdx]);
             }
@@ -3668,7 +3758,14 @@ function runQuickImpose() {
 
 
             // Auto-load preference
-            loadLastByDefault: chkLoadLast.value,            foldScheme: (typeof foldSchemeDropdown !== "undefined" && foldSchemeDropdown.selection) ? foldSchemeDropdown.selection.index : 0,
+            loadLastByDefault: chkLoadLast.value,
+            pdfPresetIndex: (typeof pdfExportPresetDropdown !== "undefined" && pdfExportPresetDropdown.selection) ? pdfExportPresetDropdown.selection.index : 0,
+            pdfPresetName: (typeof pdfExportPresetDropdown !== "undefined" && pdfExportPresetDropdown.selection) ? pdfExportPresetDropdown.selection.text : "",
+            sheetFormatName: (typeof sheetDropdown !== "undefined" && sheetDropdown.selection) ? sheetDropdown.selection.text : "Custom",
+            coverPaperStr: (typeof coverDropdown !== "undefined" && coverDropdown.selection) ? coverDropdown.selection.text : "",
+            blockPaperStr: (typeof blockDropdown !== "undefined" && blockDropdown.selection) ? blockDropdown.selection.text : "",
+            generateJobReport: (typeof chkJobReport !== "undefined") ? chkJobReport.value : true,
+            foldScheme: (typeof foldSchemeDropdown !== "undefined" && foldSchemeDropdown.selection) ? foldSchemeDropdown.selection.index : 0,
             workStyle: (typeof workStyleDropdown !== "undefined" && workStyleDropdown.selection) ? workStyleDropdown.selection.index : 0
         };
     }
@@ -3809,7 +3906,26 @@ function runQuickImpose() {
         else if (params.markOffset !== undefined) editMarkOffsetTB.text = params.markOffset.toString();
         if (params.markOffsetLR !== undefined) editMarkOffsetLR.text = params.markOffsetLR.toString();
         else if (params.markOffset !== undefined) editMarkOffsetLR.text = params.markOffset.toString();
-        // PDF Preset restored omitted
+        if (typeof pdfExportPresetDropdown !== "undefined" && pdfExportPresetDropdown) {
+            if (params.pdfPresetName) {
+                var pFound = -1;
+                for (var pIdx = 0; pIdx < pdfExportPresetDropdown.items.length; pIdx++) {
+                    if (pdfExportPresetDropdown.items[pIdx].text === params.pdfPresetName) {
+                        pFound = pIdx;
+                        break;
+                    }
+                }
+                if (pFound !== -1) pdfExportPresetDropdown.selection = pFound;
+                else if (params.pdfPresetIndex !== undefined && params.pdfPresetIndex < pdfExportPresetDropdown.items.length) {
+                    pdfExportPresetDropdown.selection = params.pdfPresetIndex;
+                }
+            } else if (params.pdfPresetIndex !== undefined && params.pdfPresetIndex < pdfExportPresetDropdown.items.length) {
+                pdfExportPresetDropdown.selection = params.pdfPresetIndex;
+            }
+        }
+        if (params.generateJobReport !== undefined && typeof chkJobReport !== "undefined") {
+            chkJobReport.value = params.generateJobReport;
+        }
 
         if (params.addSheetBleed !== undefined && typeof chkSheetBleed !== "undefined") {
             chkSheetBleed.value = params.addSheetBleed;
@@ -3997,6 +4113,9 @@ function runQuickImpose() {
         if (typeof chkLinkMargins !== "undefined" && chkLinkMargins) {
             chkLinkMargins.text = t.chk_link_margins || "Uniform Margins";
             if (t.tip_link_margins) chkLinkMargins.helpTip = t.tip_link_margins;
+        }
+        if (typeof chkJobReport !== "undefined" && chkJobReport) {
+            chkJobReport.text = t.chk_job_report || "Generate Imposition Job Report (.txt)";
         }
         if (typeof lblPreviewTheme !== "undefined" && lblPreviewTheme) {
             lblPreviewTheme.text = t.lbl_preview_theme || "Preview Theme:";
@@ -4309,6 +4428,8 @@ function draw2x2MarksAndSlug(targetPage, mLeft, mTop, W, H, bT, bB, bL, bR, sHor
 
 function executeTwoPassEngine(srcDoc, params) {
     var totalPgs = srcDoc.pages.length;
+    var singlePageW = srcDoc.documentPreferences.pageWidth;
+    var singlePageH = srcDoc.documentPreferences.pageHeight;
 
     var pagesPerSheet = 8;
     var numSheetsInSig = 1;
@@ -4381,20 +4502,7 @@ function executeTwoPassEngine(srcDoc, params) {
     app.pdfExportPreferences.exportReaderSpreads = false;
     app.pdfExportPreferences.pageRange = PageRange.ALL_PAGES;
 
-    var pdfPreset = null;
-    try {
-        pdfPreset = app.pdfExportPresets.itemByName("[High Quality Print]");
-        if (!pdfPreset.isValid) pdfPreset = null;
-    } catch (e) { }
-    if (!pdfPreset) {
-        try {
-            pdfPreset = app.pdfExportPresets.itemByName("[Высокое качество печати]");
-            if (!pdfPreset.isValid) pdfPreset = null;
-        } catch (e) { }
-    }
-    if (!pdfPreset) {
-        try { pdfPreset = app.pdfExportPresets[0]; } catch (e) { }
-    }
+    var pdfPreset = getSelectedPdfPreset(params ? params.pdfPresetName : null);
 
     try {
         interDoc.exportFile(ExportFormat.PDF_TYPE, tempFile, false, pdfPreset);
@@ -4461,6 +4569,8 @@ function executeTwoPassEngine(srcDoc, params) {
     app.pdfPlacePreferences.pdfCrop = PDFCrop.CROP_BLEED;
 
     var totalSheets = sigCount * numSheetsInSig; // Number of physical 2x2 sheets
+    var flatsMapping2P = [];
+    var flatCount2P = 0;
 
     for (var sIdx = 0; sIdx < totalSheets; sIdx++) {
         var N = sIdx + 1;
@@ -4470,6 +4580,7 @@ function executeTwoPassEngine(srcDoc, params) {
         var isBacks = [false, true];
         for (var b = 0; b < isBacks.length; b++) {
             var isBack = isBacks[b];
+            flatCount2P++;
 
             if (!isFirst) {
                 currentPg = targetDoc.pages.add(LocationOptions.AT_END);
@@ -4531,6 +4642,74 @@ function executeTwoPassEngine(srcDoc, params) {
                 var markMarginTop = addBleedTB;
                 draw2x2MarksAndSlug(currentPg, markMarginLeft, markMarginTop, singlePageW, singlePageH, bT, bB, bL, bR, sHoriz, sVert, targetSheetW, targetSheetH, params, sIdx + 1, isBack);
             }
+
+            // Record 2x2 mapping for Job Report
+            var sigPages = pagesPerSig;
+            var sB = spreadBottomStr - 1; // 0-based spread index
+            var sT = spreadTopStr - 1;    // 0-based spread index
+            var pBotLeft = !isBack ? (sigPages - 2 * sB) : (2 * sB + 2);
+            var pBotRight = !isBack ? (2 * sB + 1) : (sigPages - 2 * sB - 1);
+            var pTopLeft = !isBack ? (sigPages - 2 * sT - 1) : (sigPages - 2 * sT);
+            var pTopRight = !isBack ? (2 * sT + 2) : (2 * sT + 1);
+
+            var totalSigSpreads = (params.sheetsPerSig > 0) ? (params.sheetsPerSig * 2) : totalSpreads;
+            var sheetSigIdxB = (totalSigSpreads > 0) ? (sB % totalSigSpreads) : sB;
+            var sheetSigIdxT = (totalSigSpreads > 0) ? (sT % totalSigSpreads) : sT;
+
+            var creepValB = 0;
+            var creepValT = 0;
+            if (params.enableCreep) {
+                var creepOuterVal = params.creepOuter || 0;
+                var creepInnerVal = params.creepInner || 0;
+                if (totalSigSpreads > 1) {
+                    creepValB = creepOuterVal + (sheetSigIdxB / (totalSigSpreads - 1)) * (creepInnerVal - creepOuterVal);
+                    creepValT = creepOuterVal + (sheetSigIdxT / (totalSigSpreads - 1)) * (creepInnerVal - creepOuterVal);
+                } else {
+                    creepValB = creepOuterVal;
+                    creepValT = creepOuterVal;
+                }
+            }
+
+            // Col 1, Row 1 (Top Left)
+            flatsMapping2P.push({
+                flatNum: flatCount2P,
+                sheetNum: sIdx + 1,
+                isBack: isBack,
+                col: 1, row: 1,
+                pageNum: pTopLeft <= totalPgs ? pTopLeft : 0,
+                rotation: 180,
+                shiftX: creepValT
+            });
+            // Col 2, Row 1 (Top Right)
+            flatsMapping2P.push({
+                flatNum: flatCount2P,
+                sheetNum: sIdx + 1,
+                isBack: isBack,
+                col: 2, row: 1,
+                pageNum: pTopRight <= totalPgs ? pTopRight : 0,
+                rotation: 180,
+                shiftX: -creepValT
+            });
+            // Col 1, Row 2 (Bottom Left)
+            flatsMapping2P.push({
+                flatNum: flatCount2P,
+                sheetNum: sIdx + 1,
+                isBack: isBack,
+                col: 1, row: 2,
+                pageNum: pBotLeft <= totalPgs ? pBotLeft : 0,
+                rotation: 0,
+                shiftX: creepValB
+            });
+            // Col 2, Row 2 (Bottom Right)
+            flatsMapping2P.push({
+                flatNum: flatCount2P,
+                sheetNum: sIdx + 1,
+                isBack: isBack,
+                col: 2, row: 2,
+                pageNum: pBotRight <= totalPgs ? pBotRight : 0,
+                rotation: 0,
+                shiftX: -creepValB
+            });
         }
     }
 
@@ -4538,9 +4717,87 @@ function executeTwoPassEngine(srcDoc, params) {
         try { tempFile.remove(); } catch (e) { }
     }
     var initialLang = params.lang || "ru";
+
+    var jobReportFile = null;
+    if (params.generateJobReport) {
+        try {
+            var srcDocPathStr2 = "";
+            try {
+                if (srcDoc && srcDoc.saved) {
+                    srcDocPathStr2 = srcDoc.filePath.fsName + "\\" + srcDoc.name;
+                }
+            } catch (ePth2) { }
+
+            var reportData2P = {
+                lang: initialLang,
+                srcDoc: srcDoc,
+                srcDocName: srcDoc.name,
+                srcDocPath: srcDocPathStr2,
+                docFolder: (srcDoc && srcDoc.saved && srcDoc.filePath) ? srcDoc.filePath : Folder.temp,
+                docNameClean: docNameClean,
+                pdfPresetName: params.pdfPresetName || "[High Quality Print]",
+                srcPgsCount: totalPgs,
+                srcTrimW: singlePageW,
+                srcTrimH: singlePageH,
+                unitStr: "mm",
+                bleedT: bT, bleedB: bB, bleedL: bL, bleedR: bR,
+                pdfBoxes: {
+                    trimW: 2 * singlePageW,
+                    trimH: singlePageH,
+                    bleedW: 2 * singlePageW + bL + bR,
+                    bleedH: singlePageH + bT + bB,
+                    mediaW: 2 * singlePageW + bL + bR,
+                    mediaH: singlePageH + bT + bB,
+                    bleedOffsetX: (bL + bR) / 2,
+                    bleedOffsetY: (bT + bB) / 2
+                },
+                impTypeStr: "Saddle Stitch (Скрепка)",
+                foldSchemeStr: "8 полос (2 сгиба - 2x2)",
+                workStyleStr: "Sheetwise (Лицо и Оборот)",
+                sheetFormatName: "Sheet",
+                sheetW: targetSheetW,
+                sheetH: targetSheetH,
+                impAreaW: targetSheetW,
+                impAreaH: targetSheetH,
+                cols: 2, rows: 2, totalUp: 4,
+                marginLeft: mLeft, marginTop: addBleedTB, marginRight: mRight, marginBottom: addBleedTB,
+                spacingHoriz: sHoriz, spacingVert: sVert,
+                addSheetBleed: params.addSheetBleed,
+                resetTrimBleed: false,
+                enableCreep: params.enableCreep,
+                creepOuter: params.creepOuter,
+                creepInner: params.creepInner,
+                creepDirStr: (params.creepDirectionIndex === 1) ? "Outwards" : "Inwards",
+                purHinge: 0,
+                rotateBacks: params.rotateBacks,
+                drawMarks: params.drawMarks,
+                markLength: params.markLength,
+                markThickness: params.markThickness,
+                markOffsetTB: params.markOffsetTB,
+                markOffsetLR: params.markOffsetLR,
+                drawCenterMark: params.drawCenterMark,
+                infoSlug: params.infoSlug,
+                slugFontSize: params.slugFontSize,
+                flatsCount: targetDoc.pages.length,
+                isDoubleSided: true,
+                flatsMapping: flatsMapping2P
+            };
+            jobReportFile = generateAndSaveJobReport(reportData2P);
+        } catch (eRep2P) { }
+    }
+
     if (!params.isTwoPassIntermediate) {
         var succStr = (typeof translations !== "undefined" && translations[initialLang] && translations[initialLang].alert_success) ? translations[initialLang].alert_success : "Success! Total flats: ";
-        alert(succStr + targetDoc.pages.length);
+        if (jobReportFile && jobReportFile.exists) {
+            var msgSaved = (typeof translations !== "undefined" && translations[initialLang] && translations[initialLang].msg_job_report_saved) ? translations[initialLang].msg_job_report_saved : "Imposition Job Report saved to:\n";
+            var msgOpen = (typeof translations !== "undefined" && translations[initialLang] && translations[initialLang].msg_open_job_report) ? translations[initialLang].msg_open_job_report : "Open Job Report now?";
+            var userChoice = confirm(succStr + targetDoc.pages.length + "\n\n" + msgSaved + jobReportFile.fsName + "\n\n" + msgOpen);
+            if (userChoice) {
+                try { jobReportFile.execute(); } catch (eExec) { }
+            }
+        } else {
+            alert(succStr + targetDoc.pages.length);
+        }
     }
 }
 
@@ -4587,6 +4844,788 @@ function getFormattedDate() {
     return day + " " + month + " " + date + " " + year + " " + hrs + ":" + mins + ":" + secs;
 }
 
+function getReportLoc(lang) {
+    var dict = {
+    ru: {
+        title: "QUICKIMPOSE v2.1 — ТЕХНИЧЕСКИЙ ОТЧЕТ О СПУСКЕ ПОЛОС (JOB REPORT)",
+        date: "Дата/Время:      ",
+        hostApp: "Приложение:      ",
+        srcFile: "Исходный файл:   ",
+        srcPath: "Путь к файлу:    ",
+        pdfPreset: "PDF Пресет:      ",
+        sec1: "[1] ГЕОМЕТРИЯ ИСХОДНОГО ДОКУМЕНТА И PDF-БОКСЫ",
+        totalPages: "Всего страниц:   ",
+        trimSize: "Обрезной формат: ",
+        docBleeds: "Вылеты макета:   ",
+        top: "Верх", bottom: "Низ", inside: "Внутри", outside: "Снаружи",
+        pdfBoxMetrics: "Замеры PDF-боксов (из промежуточного PDF):",
+        bleedLabel: "Вылет",
+        directPdf: "Прямой импорт PDF макета",
+        sec2: "[2] ПАРАМЕТРЫ СПУСКА И ПЕЧАТНОГО ЛИСТА",
+        impType: "Тип спуска:      ",
+        foldScheme: "Схема фальцовки: ",
+        workStyle: "Тип оборота:     ",
+        grid: "Сетка спуска:    ",
+        cols: "Кол.", rows: "Стр.", onFlat: "на спуске",
+        printSheet: "Печатный лист:   ",
+        impArea: "Область спуска:  ",
+        margins: "Поля листа:      ",
+        left: "Левое", right: "Правое",
+        gutters: "Промежутки:      ",
+        horiz: "Гориз.", vert: "Верт.",
+        sheetBleed: "Вылет листа:     ",
+        enabled: "Включен", disabled: "Отключен",
+        resetTrimBleed: "Сброс Trim+Bleed: ",
+        yes: "Да", no: "Нет",
+        sec3: "[3] ПОСТПРЕСС И КОМПЕНСАЦИИ",
+        creep: "Сползание (Creep): ",
+        direction: "  • Направление:   ",
+        shifts: "  • Сдвиг (Out/In):",
+        outer: "Внешний", inner: "Внутренний",
+        stock: "  • Бумага:        ",
+        cover: "Обложка", block: "Блок",
+        spineComp: "  • Компенс. корешка:",
+        purHinge: "PUR боковая проклейка: ",
+        withCreaseShift: " (со сдвигом биговки)",
+        rotateBacks: "Поворот оборота на 180°: ",
+        sec4: "[4] МЕТКИ И СЛУЖЕБНЫЕ ЭЛЕМЕНТЫ",
+        cropMarks: "Метки реза:      ",
+        markLength: "Длина меток", markThickness: "Толщина",
+        offsets: "Отступы (В/Н, Л/П)",
+        centerMarks: "Центральные метки",
+        infoSlug: "Служебная инфо (Slug): ",
+        fontSize: "кегль",
+        sec5: "[5] РАСКЛАДКА ПОЛОС ПО ЛИСТАМ (SIGNATURE MAPPING)",
+        totalFlats: "Всего создано спусков (Flats): ",
+        physSheets: "Физических печатных листов:    ",
+        doubleSided: " (двусторонняя печать)",
+        singleSided: " (односторонняя печать)",
+        hFlat: "Спуск", hSheet: "Лист", hSide: "Сторона", hGrid: "Позиция (Кол,Стр)", hPage: "Полоса #", hRot: "Угол", hShift: "Сдвиг (Creep/PUR)",
+        frontSide: "Лицо", backSide: "Оборот", pageEmpty: "— [Пусто]", pagePrefix: "Стр. ",
+        autoSpread: "  (Автоматическая раскладка разворотов)"
+    },
+    en: {
+        title: "QUICKIMPOSE v2.1 — IMPOSITION JOB REPORT",
+        date: "Generated:       ",
+        hostApp: "Host App:        ",
+        srcFile: "Source File:     ",
+        srcPath: "Source Path:     ",
+        pdfPreset: "PDF Preset:      ",
+        sec1: "[1] SOURCE DOCUMENT GEOMETRY & PDF BOXES",
+        totalPages: "Total Pages:     ",
+        trimSize: "Trim Size:       ",
+        docBleeds: "Doc Bleeds:      ",
+        top: "Top", bottom: "Bottom", inside: "Inside", outside: "Outside",
+        pdfBoxMetrics: "PDF Box Metrics (Measured from intermediate PDF):",
+        bleedLabel: "Bleed",
+        directPdf: "Direct PDF layout",
+        sec2: "[2] IMPOSITION & SHEET LAYOUT",
+        impType: "Imposition Type: ",
+        foldScheme: "Fold Scheme:     ",
+        workStyle: "Work Style:      ",
+        grid: "Grid Layout:     ",
+        cols: "Cols", rows: "Rows", onFlat: "-Up per flat",
+        printSheet: "Print Sheet:     ",
+        impArea: "Imposition Area: ",
+        margins: "Sheet Margins:   ",
+        left: "Left", right: "Right",
+        gutters: "Gutters:         ",
+        horiz: "Horiz.", vert: "Vert.",
+        sheetBleed: "Sheet Bleed:     ",
+        enabled: "Enabled", disabled: "Disabled",
+        resetTrimBleed: "Reset Trim+Bleed: ",
+        yes: "Yes", no: "No",
+        sec3: "[3] POSTPRESS & FINISHING COMPENSATION",
+        creep: "Creep:           ",
+        direction: "  • Direction:     ",
+        shifts: "  • Shifts (Out/In):",
+        outer: "Outer", inner: "Inner",
+        stock: "  • Stock:         ",
+        cover: "Cover", block: "Block",
+        spineComp: "  • Thickness Comp:",
+        purHinge: "PUR Side Glue:   ",
+        withCreaseShift: " (with crease shift)",
+        rotateBacks: "Rotate Backs 180°: ",
+        sec4: "[4] MARKS & SLUG",
+        cropMarks: "Crop Marks:      ",
+        markLength: "Length", markThickness: "Weight",
+        offsets: "Offsets (TB, LR)",
+        centerMarks: "Center marks",
+        infoSlug: "Info Slug:       ",
+        fontSize: "font",
+        sec5: "[5] PRODUCTION SUMMARY & SIGNATURE MAPPING",
+        totalFlats: "Total Flats Generated: ",
+        physSheets: "Physical Press Sheets: ",
+        doubleSided: " (double-sided)",
+        singleSided: " (single-sided)",
+        hFlat: "Flat #", hSheet: "Sheet", hSide: "Side", hGrid: "Grid (Col,Row)", hPage: "Page #", hRot: "Angle", hShift: "Shift (Creep/PUR)",
+        frontSide: "Front", backSide: "Back", pageEmpty: "— [Blank]", pagePrefix: "Page ",
+        autoSpread: "  (Automatic spread placement)"
+    },
+    zh: {
+        title: "QUICKIMPOSE v2.1 — 拼版作业技术报告 (JOB REPORT)",
+        date: "生成日期:       ",
+        hostApp: "宿主程序:       ",
+        srcFile: "源文件:         ",
+        srcPath: "文件路径:       ",
+        pdfPreset: "PDF预设:        ",
+        sec1: "[1] 源文档几何尺寸与PDF页面框 (PDF BOXES)",
+        totalPages: "总页数:         ",
+        trimSize: "成品尺寸:       ",
+        docBleeds: "文档出血:       ",
+        top: "上", bottom: "下", inside: "内", outside: "外",
+        pdfBoxMetrics: "PDF框测量尺寸 (来自中间PDF):",
+        bleedLabel: "出血",
+        directPdf: "直接PDF拼版",
+        sec2: "[2] 拼版与大版设置",
+        impType: "拼版类型:       ",
+        foldScheme: "折手方案:       ",
+        workStyle: "印刷方式:       ",
+        grid: "拼版网格:       ",
+        cols: "列", rows: "行", onFlat: "拼/面",
+        printSheet: "印张尺寸:       ",
+        impArea: "拼版区域:       ",
+        margins: "大版边距:       ",
+        left: "左", right: "右",
+        gutters: "间距:           ",
+        horiz: "水平", vert: "垂直",
+        sheetBleed: "印张出血:       ",
+        enabled: "启用", disabled: "禁用",
+        resetTrimBleed: "重置净边+出血:  ",
+        yes: "是", no: "否",
+        sec3: "[3] 印后装订与位移补偿",
+        creep: "爬移 (Creep):   ",
+        direction: "  • 方向:         ",
+        shifts: "  • 位移量 (外/内):",
+        outer: "外层", inner: "内层",
+        stock: "  • 纸张:         ",
+        cover: "封面", block: "内页",
+        spineComp: "  • 书脊厚度补偿: ",
+        purHinge: "PUR侧胶压痕:    ",
+        withCreaseShift: " (含压痕位移)",
+        rotateBacks: "背面旋转180°:   ",
+        sec4: "[4] 印刷标记与边角说明",
+        cropMarks: "裁切标记:       ",
+        markLength: "长度", markThickness: "线宽",
+        offsets: "偏移 (上下, 左右)",
+        centerMarks: "中心折线标记",
+        infoSlug: "边角说明:       ",
+        fontSize: "字号",
+        sec5: "[5] 印张页面排布明细 (SIGNATURE MAPPING)",
+        totalFlats: "生成大版总数 (Flats): ",
+        physSheets: "实际印张数量 (Sheets):  ",
+        doubleSided: " (双面印刷)",
+        singleSided: " (单面印刷)",
+        hFlat: "大版", hSheet: "印张", hSide: "印刷面", hGrid: "网格位置 (列,行)", hPage: "页码 #", hRot: "角度", hShift: "位移量 (Creep/PUR)",
+        frontSide: "正面", backSide: "背面", pageEmpty: "— [空白]", pagePrefix: "第 ",
+        autoSpread: "  (自动折手跨页排布)"
+    },
+    de: {
+        title: "QUICKIMPOSE v2.1 — AUSSCHIESSBERICHT (JOB REPORT)",
+        date: "Datum/Zeit:     ",
+        hostApp: "Anwendung:      ",
+        srcFile: "Quelldatei:     ",
+        srcPath: "Dateipfad:      ",
+        pdfPreset: "PDF-Vorgabe:    ",
+        sec1: "[1] QUELLDOKUMENT-GEOMETRIE & PDF-BOXEN",
+        totalPages: "Seitenanzahl:   ",
+        trimSize: "Endformat:      ",
+        docBleeds: "Anschnitt:      ",
+        top: "Oben", bottom: "Unten", inside: "Innen", outside: "Außen",
+        pdfBoxMetrics: "PDF-Boxen Messwerte (aus Zwischen-PDF):",
+        bleedLabel: "Anschnitt",
+        directPdf: "Direkte PDF-Montage",
+        sec2: "[2] AUSSCHIESS- & BOGENPARAMETER",
+        impType: "Ausschießart:   ",
+        foldScheme: "Falzschema:     ",
+        workStyle: "Druckart:       ",
+        grid: "Nutzenraster:   ",
+        cols: "Spalten", rows: "Zeilen", onFlat: "-Nutzen/Form",
+        printSheet: "Druckbogen:     ",
+        impArea: "Nutzenfläche:   ",
+        margins: "Bogenränder:    ",
+        left: "Links", right: "Rechts",
+        gutters: "Zwischenraum:   ",
+        horiz: "Horiz.", vert: "Vert.",
+        sheetBleed: "Bogenanschnitt: ",
+        enabled: "Aktiviert", disabled: "Deaktiviert",
+        resetTrimBleed: "Trim+Bleed Reset: ",
+        yes: "Ja", no: "Nein",
+        sec3: "[3] WEITERVERARBEITUNG & KOMPENSATION",
+        creep: "Bundzuwachs:    ",
+        direction: "  • Richtung:     ",
+        shifts: "  • Versatz (A/I):",
+        outer: "Außen", inner: "Innen",
+        stock: "  • Papier:       ",
+        cover: "Umschlag", block: "Kern",
+        spineComp: "  • Rückenkomp.:  ",
+        purHinge: "PUR-Seitenleimung: ",
+        withCreaseShift: " (mit Rillungsversatz)",
+        rotateBacks: "Rückseite 180° drehen: ",
+        sec4: "[4] MARKEN & BOGENBESCHRIFTUNG",
+        cropMarks: "Schnittmarken:  ",
+        markLength: "Länge", markThickness: "Stärke",
+        offsets: "Versatz (OU, LR)",
+        centerMarks: "Falzmarken",
+        infoSlug: "Druckbogen-Info: ",
+        fontSize: "Schriftgröße",
+        sec5: "[5] PRODUKTIONSÜBERSICHT & SEITENZUORDNUNG",
+        totalFlats: "Erstellte Druckformen (Flats): ",
+        physSheets: "Physische Druckbogen:          ",
+        doubleSided: " (doppelseitiger Druck)",
+        singleSided: " (einseitiger Druck)",
+        hFlat: "Form #", hSheet: "Bogen", hSide: "Seite", hGrid: "Position (Sp,Zl)", hPage: "Seite #", hRot: "Winkel", hShift: "Versatz (Creep/PUR)",
+        frontSide: "Schönseite", backSide: "Widerdruck", pageEmpty: "— [Leer]", pagePrefix: "S. ",
+        autoSpread: "  (Automatische Druckbogenmontage)"
+    },
+    es: {
+        title: "QUICKIMPOSE v2.1 — INFORME DE IMPOSICIÓN (JOB REPORT)",
+        date: "Fecha/Hora:     ",
+        hostApp: "Aplicación:     ",
+        srcFile: "Archivo origen: ",
+        srcPath: "Ruta archivo:   ",
+        pdfPreset: "Ajuste PDF:     ",
+        sec1: "[1] GEOMETRÍA DEL DOCUMENTO Y CAJAS PDF",
+        totalPages: "Total páginas:  ",
+        trimSize: "Tamaño corte:   ",
+        docBleeds: "Sangrados doc:  ",
+        top: "Sup.", bottom: "Inf.", inside: "Interior", outside: "Exterior",
+        pdfBoxMetrics: "Medidas de cajas PDF (medidas en PDF intermedio):",
+        bleedLabel: "Sangrado",
+        directPdf: "Imposición PDF directa",
+        sec2: "[2] PARÁMETROS DE IMPOSICIÓN Y PLIEGO",
+        impType: "Tipo imposición:",
+        foldScheme: "Esquema plegado:",
+        workStyle: "Modo impresión: ",
+        grid: "Cuadrícula:     ",
+        cols: "Cols", rows: "Filas", onFlat: "-Up por cara",
+        printSheet: "Pliego impresión:",
+        impArea: "Área imposición:",
+        margins: "Márgenes pliego:",
+        left: "Izquierda", right: "Derecha",
+        gutters: "Calles/Calles:  ",
+        horiz: "Horiz.", vert: "Vert.",
+        sheetBleed: "Sangrado pliego:",
+        enabled: "Activado", disabled: "Desactivado",
+        resetTrimBleed: "Reset Corte+Sangrado: ",
+        yes: "Sí", no: "No",
+        sec3: "[3] POSTPRENSA Y COMPENSACIONES",
+        creep: "Comp. sangrado (Creep): ",
+        direction: "  • Dirección:    ",
+        shifts: "  • Despl. (Ext/Int):",
+        outer: "Exterior", inner: "Interior",
+        stock: "  • Papel:        ",
+        cover: "Cubierta", block: "Interior",
+        spineComp: "  • Comp. lomo:   ",
+        purHinge: "Bisagra PUR cola lat.: ",
+        withCreaseShift: " (con desl. hendido)",
+        rotateBacks: "Girar dorso 180°: ",
+        sec4: "[4] MARCAS E INFORMACIÓN TÉCNICA",
+        cropMarks: "Marcas de corte:",
+        markLength: "Longitud", markThickness: "Grosor",
+        offsets: "Desplazamientos (SI, ID)",
+        centerMarks: "Marcas centrales",
+        infoSlug: "Información técnica (Slug): ",
+        fontSize: "cuerpo",
+        sec5: "[5] RESUMEN DE PRODUCCIÓN Y ASIGNACIÓN DE PÁGINAS",
+        totalFlats: "Total caras generadas (Flats): ",
+        physSheets: "Pliegos físicos de máquina:    ",
+        doubleSided: " (impresión a doble cara)",
+        singleSided: " (impresión a una cara)",
+        hFlat: "Cara #", hSheet: "Pliego", hSide: "Lado", hGrid: "Posición (Col,Fila)", hPage: "Pág. #", hRot: "Ángulo", hShift: "Despl. (Creep/PUR)",
+        frontSide: "Tiro", backSide: "Retira", pageEmpty: "— [En blanco]", pagePrefix: "Pág. ",
+        autoSpread: "  (Montaje automático de pliegos)"
+    },
+    fr: {
+        title: "QUICKIMPOSE v2.1 — RAPPORT D'IMPOSITION (JOB REPORT)",
+        date: "Date/Heure :    ",
+        hostApp: "Application :   ",
+        srcFile: "Fichier source :",
+        srcPath: "Chemin fichier :",
+        pdfPreset: "Préréglage PDF :",
+        sec1: "[1] GÉOMÉTRIE DU DOCUMENT ET BOÎTES PDF",
+        totalPages: "Total pages :   ",
+        trimSize: "Format fini :   ",
+        docBleeds: "Fonds perdus :  ",
+        top: "Haut", bottom: "Bas", inside: "Intérieur", outside: "Extérieur",
+        pdfBoxMetrics: "Mesures des boîtes PDF (du PDF intermédiaire) :",
+        bleedLabel: "Fond perdu",
+        directPdf: "Imposition directe PDF",
+        sec2: "[2] PARAMÈTRES D'IMPOSITION ET FEUILLE",
+        impType: "Type imposition :",
+        foldScheme: "Schéma pliage :  ",
+        workStyle: "Mode impression :",
+        grid: "Grille de pose : ",
+        cols: "Colonnes", rows: "Lignes", onFlat: "-poses/forme",
+        printSheet: "Feuille papier : ",
+        impArea: "Surface utile :  ",
+        margins: "Marges feuille : ",
+        left: "Gauche", right: "Droite",
+        gutters: "Gouttières :     ",
+        horiz: "Horiz.", vert: "Vert.",
+        sheetBleed: "Fond perdu feuille : ",
+        enabled: "Activé", disabled: "Désactivé",
+        resetTrimBleed: "Réinit. coupe+fond : ",
+        yes: "Oui", no: "Non",
+        sec3: "[3] FAÇONNAGE ET COMPENSATIONS",
+        creep: "Chasse (Creep) : ",
+        direction: "  • Sens :         ",
+        shifts: "  • Décalage (Ext/Int) :",
+        outer: "Extérieur", inner: "Intérieur",
+        stock: "  • Papier :       ",
+        cover: "Couverture", block: "Cahier",
+        spineComp: "  • Comp. dos :    ",
+        purHinge: "Rainage colle latérale PUR : ",
+        withCreaseShift: " (avec décalage du pli)",
+        rotateBacks: "Rotation verso 180° : ",
+        sec4: "[4] REPÈRES ET INFOS TECHNIQUES",
+        cropMarks: "Repères de coupe : ",
+        markLength: "Longueur", markThickness: "Épaisseur",
+        offsets: "Décalages (HB, GD)",
+        centerMarks: "Repères de pli",
+        infoSlug: "Informations techniques : ",
+        fontSize: "corps",
+        sec5: "[5] RÉSUMÉ DE PRODUCTION ET MAPPAGE DES CAHIERS",
+        totalFlats: "Total formes générées (Flats) : ",
+        physSheets: "Feuilles physiques d'impression :",
+        doubleSided: " (impression recto-verso)",
+        singleSided: " (impression recto seul)",
+        hFlat: "Forme #", hSheet: "Feuille", hSide: "Face", hGrid: "Position (Col,Lig)", hPage: "Page #", hRot: "Angle", hShift: "Décalage (Creep/PUR)",
+        frontSide: "Recto", backSide: "Verso", pageEmpty: "— [Vierge]", pagePrefix: "P. ",
+        autoSpread: "  (Montage automatique de cahiers)"
+    },
+    it: {
+        title: "QUICKIMPOSE v2.1 — REPORT DI IMPOSIZIONE (JOB REPORT)",
+        date: "Data/Ora:       ",
+        hostApp: "Applicazione:   ",
+        srcFile: "File sorgente:  ",
+        srcPath: "Percorso file:  ",
+        pdfPreset: "Predefinito PDF:",
+        sec1: "[1] GEOMETRIA DEL DOCUMENTO E BOX PDF",
+        totalPages: "Pagine totali:  ",
+        trimSize: "Formato finito: ",
+        docBleeds: "Abbondanze doc: ",
+        top: "Superiore", bottom: "Inferiore", inside: "Interno", outside: "Esterno",
+        pdfBoxMetrics: "Misure dei box PDF (dal PDF intermedio):",
+        bleedLabel: "Abbondanza",
+        directPdf: "Imposizione PDF diretta",
+        sec2: "[2] PARAMETRI DI IMPOSIZIONE E FOGLIO",
+        impType: "Tipo imposiz.:  ",
+        foldScheme: "Schema piega:   ",
+        workStyle: "Stile stampa:   ",
+        grid: "Griglia:        ",
+        cols: "Colonne", rows: "Righe", onFlat: "-Up per segnatura",
+        printSheet: "Foglio stampa:  ",
+        impArea: "Area imposizione:",
+        margins: "Margini foglio: ",
+        left: "Sinistra", right: "Destra",
+        gutters: "Spaziatori:     ",
+        horiz: "Orizz.", vert: "Vert.",
+        sheetBleed: "Abbondanza foglio:",
+        enabled: "Attivato", disabled: "Disattivato",
+        resetTrimBleed: "Azzera Trim+Bleed: ",
+        yes: "Sì", no: "No",
+        sec3: "[3] LEGATORIA E COMPENSAZIONI",
+        creep: "Scorrimento (Creep): ",
+        direction: "  • Direzione:    ",
+        shifts: "  • Spostam. (Est/Int):",
+        outer: "Esterno", inner: "Interno",
+        stock: "  • Carta:        ",
+        cover: "Copertina", block: "Interno",
+        spineComp: "  • Comp. dorso:  ",
+        purHinge: "Incollatura laterale PUR: ",
+        withCreaseShift: " (con spessore cordone)",
+        rotateBacks: "Ruota retro 180°: ",
+        sec4: "[4] SEGNI E INFO TECNICHE",
+        cropMarks: "Segni di taglio:",
+        markLength: "Lunghezza", markThickness: "Spessore",
+        offsets: "Distanza (SI, SD)",
+        centerMarks: "Segni di piega centrali",
+        infoSlug: "Info tecniche (Slug): ",
+        fontSize: "corpo",
+        sec5: "[5] RIEPILOGO PRODUZIONE E MAPPATURA SEGNATURE",
+        totalFlats: "Totale segnature create (Flats): ",
+        physSheets: "Fogli fisici di macchina:        ",
+        doubleSided: " (stampa fronte/retro)",
+        singleSided: " (stampa solo fronte)",
+        hFlat: "Segn. #", hSheet: "Foglio", hSide: "Lato", hGrid: "Posizione (Col,Riga)", hPage: "Pag. #", hRot: "Angolo", hShift: "Spostam. (Creep/PUR)",
+        frontSide: "Fronte", backSide: "Retro", pageEmpty: "— [Vuoto]", pagePrefix: "Pag. ",
+        autoSpread: "  (Montaggio automatico segnature)"
+    },
+    ja: {
+        title: "QUICKIMPOSE v2.1 — 面付けジョブレポート (JOB REPORT)",
+        date: "作成日時:       ",
+        hostApp: "アプリケーション: ",
+        srcFile: "元ファイル:     ",
+        srcPath: "ファイルパス:   ",
+        pdfPreset: "PDFプリセット:  ",
+        sec1: "[1] ソースドキュメント寸法とPDFボックス",
+        totalPages: "総ページ数:     ",
+        trimSize: "仕上がりサイズ: ",
+        docBleeds: "裁ち落とし:     ",
+        top: "天", bottom: "地", inside: "のど", outside: "小口",
+        pdfBoxMetrics: "PDFボックス測定値 (中間PDFより):",
+        bleedLabel: "裁ち落とし",
+        directPdf: "PDF直接面付け",
+        sec2: "[2] 面付けと用紙設定",
+        impType: "面付けタイプ:   ",
+        foldScheme: "折り方式:       ",
+        workStyle: "印刷方式:       ",
+        grid: "面付けグリッド: ",
+        cols: "列", rows: "行", onFlat: "面付け/版",
+        printSheet: "印刷用紙:       ",
+        impArea: "面付け領域:     ",
+        margins: "用紙マージン:   ",
+        left: "左", right: "右",
+        gutters: "間隔:           ",
+        horiz: "水平", vert: "垂直",
+        sheetBleed: "用紙裁ち落とし: ",
+        enabled: "有効", disabled: "無効",
+        resetTrimBleed: "仕上がり+裁ち落とし再設定: ",
+        yes: "はい", no: "いいえ",
+        sec3: "[3] 製本および補正設定",
+        creep: "競り出し補正 (Creep): ",
+        direction: "  • 方向:         ",
+        shifts: "  • 移動量 (外/内):",
+        outer: "外側", inner: "内側",
+        stock: "  • 用紙:         ",
+        cover: "表紙", block: "本文",
+        spineComp: "  • 背幅補正:     ",
+        purHinge: "PUR サイド糊代罫線: ",
+        withCreaseShift: " (折り罫移動含む)",
+        rotateBacks: "裏面180°回転:   ",
+        sec4: "[4] トンボ・マークおよび情報行",
+        cropMarks: "コーナートンボ: ",
+        markLength: "長さ", markThickness: "線幅",
+        offsets: "オフセット (天地, 左右)",
+        centerMarks: "センタートンボ",
+        infoSlug: "版面情報 (Slug): ",
+        fontSize: "pt",
+        sec5: "[5] 台割り・面付け配置詳細 (SIGNATURE MAPPING)",
+        totalFlats: "生成された刷版数 (Flats): ",
+        physSheets: "実印刷用紙枚数:           ",
+        doubleSided: " (両面印刷)",
+        singleSided: " (片面印刷)",
+        hFlat: "版 #", hSheet: "用紙", hSide: "面", hGrid: "配置 (列,行)", hPage: "ページ #", hRot: "回転", hShift: "補正移動量 (Creep/PUR)",
+        frontSide: "表", backSide: "裏", pageEmpty: "— [白紙]", pagePrefix: "P. ",
+        autoSpread: "  (見開き自動割り付け)"
+    },
+    pl: {
+        totalPages: "Liczba stron:    ",
+        trimSize: "Format netto:    ",
+        docBleeds: "Spady dokumentu: ",
+        top: "Góra", bottom: "Dół", inside: "Wewnątrz", outside: "Zewnątrz",
+        pdfBoxMetrics: "Wymiary ramek PDF (zmierzone z PDF tymczasowego):",
+        bleedLabel: "Spad",
+        directPdf: "Bezpośredni import stron PDF",
+        sec2: "[2] PARAMETRY IMPOZYCJI I ARKUSZA DRUKARSKIEGO",
+        impType: "Typ impozycji:   ",
+        foldScheme: "Schemat falcowania:",
+        workStyle: "Sposób druku:    ",
+        grid: "Siatka użytków:  ",
+        cols: "Kolumny", rows: "Wiersze", onFlat: "-użytków na arkusz",
+        printSheet: "Arkusz druku:    ",
+        impArea: "Obszar impozycji:",
+        margins: "Marginesy arkusza:",
+        left: "Lewy", right: "Prawy",
+        gutters: "Odstępy / Spady: ",
+        horiz: "Poz.", vert: "Pion.",
+        sheetBleed: "Spad arkusza:    ",
+        enabled: "Włączone", disabled: "Wyłączone",
+        resetTrimBleed: "Resetuj Trim+Bleed: ",
+        yes: "Tak", no: "Nie",
+        sec3: "[3] WYKOŃCZENIE I KOMPENSACJE",
+        creep: "Kompensacja wypychania (Creep): ",
+        direction: "  • Kierunek:      ",
+        shifts: "  • Przesunięcia (Zew/Wew):",
+        outer: "Zewnętrzne", inner: "Wewnętrzne",
+        stock: "  • Papier:        ",
+        cover: "Okładka", block: "Wkład",
+        spineComp: "  • Komp. grzbietu:",
+        purHinge: "Klej boczny PUR: ",
+        withCreaseShift: " (z przesunięciem bigu)",
+        rotateBacks: "Obrót rewersu o 180°: ",
+        sec4: "[4] ZNACZNIKI I OZNACZENIA",
+        cropMarks: "Znaczniki cięcia:",
+        markLength: "Długość", markThickness: "Grubość",
+        offsets: "Odsunięcia (GD, LP)",
+        centerMarks: "Znaczniki grzbietowe",
+        infoSlug: "Opis arkusza (Slug): ",
+        fontSize: "stopień",
+        sec5: "[5] PODSUMOWANIE PRODUKCJI I ROZKŁAD STRON",
+        totalFlats: "Łącznie form drukowych (Flats): ",
+        physSheets: "Fizycznych arkuszy papieru:     ",
+        doubleSided: " (druk dwustronny)",
+        singleSided: " (druk jednostronny)",
+        hFlat: "Forma", hSheet: "Arkusz", hSide: "Strona", hGrid: "Pozycja (Kol,Wie)", hPage: "Strona #", hRot: "Obrót", hShift: "Przes. (Creep/PUR)",
+        frontSide: "Awers", backSide: "Rewers", pageEmpty: "— [Pusta]", pagePrefix: "Str. ",
+        autoSpread: "  (Automatyczny montaż składek)"
+    },
+    pt: {
+        title: "QUICKIMPOSE v2.0 — RELATÓRIO DE IMPOSIÇÃO (JOB REPORT)",
+        date: "Gerado em:       ",
+        hostApp: "Aplicativo:      ",
+        srcFile: "Arquivo de origem:",
+        srcPath: "Caminho do arquivo:",
+        pdfPreset: "Predefinição PDF:",
+        sec1: "[1] GEOMETRIA DO DOCUMENTO DE ORIGEM E BOXES PDF",
+        totalPages: "Total de páginas:",
+        trimSize: "Formato final:   ",
+        docBleeds: "Sangrias do doc: ",
+        top: "Topo", bottom: "Base", inside: "Interno", outside: "Externo",
+        pdfBoxMetrics: "Métricas de caixas PDF (medidas no PDF intermediário):",
+        bleedLabel: "Sangria",
+        directPdf: "Importação direta de páginas PDF",
+        sec2: "[2] PARÂMETROS DE IMPOSIÇÃO E FOLHA DE IMPRESSÃO",
+        impType: "Tipo de imposição:",
+        foldScheme: "Esquema de dobra:",
+        workStyle: "Tipo de impressão:",
+        grid: "Grade de poses:  ",
+        cols: "Cols", rows: "Linhas", onFlat: "-Up por folha",
+        printSheet: "Folha de impressão:",
+        impArea: "Área de imposição:",
+        margins: "Margens da folha:",
+        left: "Esq.", right: "Dir.",
+        gutters: "Medianizes / Gaps:",
+        horiz: "Horiz.", vert: "Vert.",
+        sheetBleed: "Sangria da folha:",
+        enabled: "Ativado", disabled: "Desativado",
+        resetTrimBleed: "Redefinir Trim+Bleed: ",
+        yes: "Sim", no: "Não",
+        sec3: "[3] ACABAMENTO E COMPENSAÇÕES",
+        creep: "Compensação de avanço (Creep): ",
+        direction: "  • Direção:       ",
+        shifts: "  • Deslocamentos (Ext/Int):",
+        outer: "Externo", inner: "Interno",
+        stock: "  • Tipo de papel: ",
+        cover: "Capa", block: "Miolo",
+        spineComp: "  • Comp. de lombada:",
+        purHinge: "Vinco lateral PUR: ",
+        withCreaseShift: " (com deslocamento de vinco)",
+        rotateBacks: "Girar versos 180°: ",
+        sec4: "[4] MARCAS E ANOTAÇÕES",
+        cropMarks: "Marcas de corte: ",
+        markLength: "Comprimento", markThickness: "Espessura",
+        offsets: "Deslocamentos (TB, LR)",
+        centerMarks: "Marcas centrais de dobra",
+        infoSlug: "Informações técnicas (Slug): ",
+        fontSize: "corpo",
+        sec5: "[5] RESUMO DE PRODUÇÃO E MAPEAMENTO DE CADERNOS",
+        totalFlats: "Total de formas geradas (Flats): ",
+        physSheets: "Folhas físicas de impressão:     ",
+        doubleSided: " (impressão frente e verso)",
+        singleSided: " (impressão em um lado)",
+        hFlat: "Forma", hSheet: "Folha", hSide: "Lado", hGrid: "Posição (Col,Lin)", hPage: "Página #", hRot: "Rot.", hShift: "Desloc. (Creep/PUR)",
+        frontSide: "Frente", backSide: "Verso", pageEmpty: "— [Vazio]", pagePrefix: "Pág. ",
+        autoSpread: "  (Montagem automática de cadernos)"
+    }
+    };
+    return (lang && dict[lang]) ? dict[lang] : dict["en"];
+}
+
+function generateAndSaveJobReport(reportData) {
+    if (!reportData) return null;
+    try {
+        var lang = reportData.lang || "en";
+        var loc = getReportLoc(lang);
+        var now = new Date();
+        var pad2 = function (n) { return (n < 10 ? "0" : "") + n; };
+        var dateStr = now.getFullYear() + "-" + 
+            pad2(now.getMonth() + 1) + "-" + 
+            pad2(now.getDate()) + " " + 
+            pad2(now.getHours()) + ":" + 
+            pad2(now.getMinutes()) + ":" + 
+            pad2(now.getSeconds());
+
+        var osStr = (File.fs === "Windows") ? "Windows" : "macOS";
+        var idVer = (typeof app !== "undefined" && app.version) ? ("Adobe InDesign " + app.version) : "Adobe InDesign";
+
+        var lines = [];
+        var sep = "================================================================================";
+        var subSep = "--------------------------------------------------------------------------------";
+
+        lines.push(sep);
+        lines.push(loc.title);
+        lines.push(sep);
+        lines.push(loc.date + dateStr);
+        lines.push(loc.hostApp + idVer + " (" + osStr + ")");
+        lines.push(loc.srcFile + (reportData.srcDocName || "Document"));
+        if (reportData.srcDocPath) {
+            lines.push(loc.srcPath + reportData.srcDocPath);
+        }
+        lines.push(loc.pdfPreset + (reportData.pdfPresetName || "[Default]"));
+        lines.push(sep);
+        lines.push("");
+
+        // [1] SOURCE GEOMETRY & PDF BOXES
+        lines.push(loc.sec1);
+        lines.push(subSep);
+        var u = reportData.unitStr || "mm";
+        lines.push(loc.totalPages + (reportData.srcPgsCount || 1));
+        lines.push(loc.trimSize + (reportData.srcTrimW || 0).toFixed(2) + " × " + (reportData.srcTrimH || 0).toFixed(2) + " " + u);
+        lines.push(loc.docBleeds + 
+            loc.top + ": " + (reportData.bleedT || 0).toFixed(2) + " " + u + " | " +
+            loc.bottom + ": " + (reportData.bleedB || 0).toFixed(2) + " " + u + " | " +
+            loc.inside + ": " + (reportData.bleedL || 0).toFixed(2) + " " + u + " | " +
+            loc.outside + ": " + (reportData.bleedR || 0).toFixed(2) + " " + u);
+        
+        lines.push("");
+        lines.push(loc.pdfBoxMetrics);
+        if (reportData.pdfBoxes) {
+            var b = reportData.pdfBoxes;
+            lines.push("  • TrimBox:     " + (b.trimW || 0).toFixed(2) + " × " + (b.trimH || 0).toFixed(2) + " " + u);
+            lines.push("  • BleedBox:    " + (b.bleedW || 0).toFixed(2) + " × " + (b.bleedH || 0).toFixed(2) + " " + u + " (" + loc.bleedLabel + ": +" + (b.bleedOffsetX || 0).toFixed(2) + " / +" + (b.bleedOffsetY || 0).toFixed(2) + " " + u + ")");
+            lines.push("  • MediaBox:    " + (b.mediaW || 0).toFixed(2) + " × " + (b.mediaH || 0).toFixed(2) + " " + u);
+        } else {
+            lines.push("  • " + loc.directPdf);
+        }
+        lines.push("");
+
+        // [2] IMPOSITION & SHEET LAYOUT
+        lines.push(loc.sec2);
+        lines.push(subSep);
+        lines.push(loc.impType + (reportData.impTypeStr || ""));
+        if (reportData.foldSchemeStr) {
+            lines.push(loc.foldScheme + reportData.foldSchemeStr);
+        }
+        lines.push(loc.workStyle + (reportData.workStyleStr || "Sheetwise"));
+        lines.push(loc.grid + (reportData.cols || 1) + " " + loc.cols + " × " + (reportData.rows || 1) + " " + loc.rows + " (" + (reportData.totalUp || 1) + " " + loc.onFlat + ")");
+        lines.push(loc.printSheet + (reportData.sheetFormatName ? (reportData.sheetFormatName + " — ") : "") + (reportData.sheetW || 0).toFixed(2) + " × " + (reportData.sheetH || 0).toFixed(2) + " " + u);
+        lines.push(loc.impArea + (reportData.impAreaW || 0).toFixed(2) + " × " + (reportData.impAreaH || 0).toFixed(2) + " " + u);
+        lines.push(loc.margins + 
+            loc.left + ": " + (reportData.marginLeft || 0).toFixed(2) + " " + u + " | " +
+            loc.top + ": " + (reportData.marginTop || 0).toFixed(2) + " " + u + " | " +
+            loc.right + ": " + (reportData.marginRight || 0).toFixed(2) + " " + u + " | " +
+            loc.bottom + ": " + (reportData.marginBottom || 0).toFixed(2) + " " + u);
+        lines.push(loc.gutters + 
+            loc.horiz + ": " + (reportData.spacingHoriz || 0).toFixed(2) + " " + u + " | " +
+            loc.vert + ": " + (reportData.spacingVert || 0).toFixed(2) + " " + u);
+        lines.push(loc.sheetBleed + (reportData.addSheetBleed ? (loc.enabled + " (+3.0 " + u + ")") : loc.disabled));
+        lines.push(loc.resetTrimBleed + (reportData.resetTrimBleed ? loc.yes : loc.no));
+        lines.push("");
+
+        // [3] FINISHING & MECHANICAL COMPENSATIONS
+        lines.push(loc.sec3);
+        lines.push(subSep);
+        if (reportData.enableCreep) {
+            lines.push(loc.creep + loc.enabled);
+            lines.push(loc.direction + (reportData.creepDirStr || ""));
+            lines.push(loc.shifts + loc.outer + ": " + (reportData.creepOuter || 0).toFixed(2) + " " + u + " | " + loc.inner + ": " + (reportData.creepInner || 0).toFixed(2) + " " + u);
+            lines.push(loc.stock + loc.cover + ": " + (reportData.coverPaperStr || "—") + " | " + loc.block + ": " + (reportData.blockPaperStr || "—"));
+            lines.push(loc.spineComp + (reportData.compensateThickness ? (loc.enabled + " (K = " + (reportData.compensateCoeff || 1.0).toFixed(2) + ")") : loc.disabled));
+        } else {
+            lines.push(loc.creep + loc.disabled);
+        }
+        if (reportData.purHinge > 0) {
+            lines.push(loc.purHinge + (reportData.purHinge || 0).toFixed(2) + " " + u + (reportData.shiftHinge ? loc.withCreaseShift : ""));
+        }
+        lines.push(loc.rotateBacks + (reportData.rotateBacks ? loc.yes : loc.no));
+        lines.push("");
+
+        // [4] MARKS & ANNOTATIONS
+        lines.push(loc.sec4);
+        lines.push(subSep);
+        lines.push(loc.cropMarks + (reportData.drawMarks ? loc.enabled : loc.disabled));
+        if (reportData.drawMarks) {
+            lines.push("  • " + loc.markLength + ": " + (reportData.markLength || 3).toFixed(2) + " " + u + " | " + loc.markThickness + ": " + (reportData.markThickness || 0.25) + " pt");
+            lines.push("  • " + loc.offsets + ": " + (reportData.markOffsetTB || 3).toFixed(2) + " " + u + " / " + (reportData.markOffsetLR || 3).toFixed(2) + " " + u);
+            lines.push("  • " + loc.centerMarks + ": " + (reportData.drawCenterMark ? loc.enabled : loc.disabled));
+        }
+        lines.push(loc.infoSlug + (reportData.infoSlug ? (loc.enabled + " (" + loc.fontSize + " " + (reportData.slugFontSize || 7) + " pt)") : loc.disabled));
+        lines.push("");
+
+        // [5] PRODUCTION SUMMARY & SIGNATURE MAPPING
+        lines.push(loc.sec5);
+        lines.push(subSep);
+        var totalFlats = reportData.flatsCount || 0;
+        var totalSheets = reportData.isDoubleSided ? Math.ceil(totalFlats / 2) : totalFlats;
+        lines.push(loc.totalFlats + totalFlats);
+        lines.push(loc.physSheets + totalSheets + (reportData.isDoubleSided ? loc.doubleSided : loc.singleSided));
+        lines.push("");
+
+        // Table formatting helper
+        var padStr = function (val, len, alignRight) {
+            var s = String(val);
+            while (s.length < len) {
+                s = alignRight ? (" " + s) : (s + " ");
+            }
+            return s;
+        };
+
+        lines.push(padStr(loc.hFlat, 8, false) + " | " + padStr(loc.hSheet, 10, false) + " | " + padStr(loc.hSide, 10, false) + " | " + padStr(loc.hGrid, 20, false) + " | " + padStr(loc.hPage, 14, false) + " | " + padStr(loc.hRot, 8, false) + " | " + padStr(loc.hShift, 20, false));
+        lines.push(subSep);
+
+        if (reportData.flatsMapping && reportData.flatsMapping.length > 0) {
+            for (var mIdx = 0; mIdx < reportData.flatsMapping.length; mIdx++) {
+                var item = reportData.flatsMapping[mIdx];
+                var fNumStr = padStr("#" + item.flatNum, 8, false);
+                var sNumStr = padStr(loc.hSheet + " " + item.sheetNum, 10, false);
+                var isItemBack = (item.isBack !== undefined) ? item.isBack : ((item.flatNum % 2 === 0));
+                var sideStr = padStr(isItemBack ? loc.backSide : loc.frontSide, 10, false);
+                var gridStr = padStr("(" + item.col + ", " + item.row + ")", 20, false);
+                var pNumStr = padStr((item.pageNum > 0 ? (loc.pagePrefix + item.pageNum) : loc.pageEmpty), 14, false);
+                var rotStr = padStr(item.rotation + "°", 8, false);
+                var shiftStr = padStr((item.shiftX !== 0 ? ((item.shiftX > 0 ? "+" : "") + item.shiftX.toFixed(2) + " " + u) : "0.00 " + u), 20, false);
+
+                lines.push(fNumStr + " | " + sNumStr + " | " + sideStr + " | " + gridStr + " | " + pNumStr + " | " + rotStr + " | " + shiftStr);
+            }
+        } else {
+            lines.push(loc.autoSpread);
+        }
+
+        lines.push("");
+        lines.push(sep);
+        lines.push("QuickImpose — Open Source Imposition Script for Adobe InDesign");
+        lines.push("https://github.com/SaidAuita/QuickImpose-InDesign");
+        lines.push(sep);
+
+        var reportContent = lines.join("\r\n");
+
+        // Determine destination file
+        var reportFile = null;
+        var baseFolder = null;
+        try {
+            if (reportData.docFolder && reportData.docFolder.exists) {
+                baseFolder = reportData.docFolder;
+            }
+        } catch (eDF) { }
+
+        if (!baseFolder || !baseFolder.exists) {
+            try {
+                if (reportData.srcDoc && reportData.srcDoc.saved) {
+                    baseFolder = reportData.srcDoc.filePath;
+                }
+            } catch (eF) { }
+        }
+
+        if (!baseFolder || !baseFolder.exists) {
+            try {
+                if (reportData.selectedPdfFile && reportData.selectedPdfFile.parent) {
+                    baseFolder = reportData.selectedPdfFile.parent;
+                }
+            } catch (eP) { }
+        }
+
+        if (!baseFolder || !baseFolder.exists) {
+            baseFolder = Folder.desktop;
+        }
+
+        var docNameClean = reportData.docNameClean || "QuickImpose_Job";
+        var fileName = docNameClean + "_JobReport.txt";
+        reportFile = new File(baseFolder.fsName + "/" + fileName);
+
+        reportFile.encoding = "UTF-8";
+        reportFile.open("w");
+        reportFile.write(reportContent);
+        reportFile.close();
+
+        return reportFile;
+    } catch (eAll) {
+        try { alert("Job Report Error: " + eAll.message + " (line " + eAll.line + ")"); } catch (eAlert) { }
+        return null;
+    }
+}
+
 function executeImposition(srcDoc, params) {
 
     var isTwoPass = (params.impTypeSelectionIndex === 0) && (params.foldScheme || 0) > 0;
@@ -4622,6 +5661,17 @@ function executeImposition(srcDoc, params) {
     var docName = srcDoc.name;
     var docWidth = srcDoc.documentPreferences.pageWidth;
     var docHeight = srcDoc.documentPreferences.pageHeight;
+    var docNameClean = cleanFileName(srcDoc.name).replace(/\.[a-zA-Z0-9]+$/, "");
+
+    var docBleedTop = 0, docBleedBottom = 0, docBleedLeft = 0, docBleedRight = 0;
+    try {
+        if (srcDoc && srcDoc.documentPreferences) {
+            docBleedTop = srcDoc.documentPreferences.documentBleedTopOffset || 0;
+            docBleedBottom = srcDoc.documentPreferences.documentBleedBottomOffset || 0;
+            docBleedLeft = srcDoc.documentPreferences.documentBleedInsideOrLeftOffset || 0;
+            docBleedRight = srcDoc.documentPreferences.documentBleedOutsideOrRightOffset || 0;
+        }
+    } catch (eDocBleed) { }
 
     // 3. Export source document to temporary PDF in _pdf_tmp folder of document directory
     var docFolder = srcDoc.saved ? srcDoc.filePath : Folder.temp;
@@ -4629,7 +5679,7 @@ function executeImposition(srcDoc, params) {
     if (!pdfFolder.exists) {
         pdfFolder.create();
     }
-    var docNameWithoutExt = srcDoc.name.replace(/\.[a-zA-Z0-9]+$/, "");
+    var docNameWithoutExt = docNameClean;
     var tsStr = typeof getHumanTimestamp === "function" ? getHumanTimestamp() : new Date().getTime().toString();
     var tempPDF = new File(pdfFolder.absoluteURI + "/tmp_" + docNameWithoutExt + "_" + tsStr + ".pdf");
 
@@ -4650,6 +5700,30 @@ function executeImposition(srcDoc, params) {
     var savedMonoComp = app.pdfExportPreferences.monochromeBitmapCompression;
     var savedMonoSamp = app.pdfExportPreferences.monochromeBitmapSampling;
 
+    // Apply selected PDF preset properties if available
+    var selectedPreset = getSelectedPdfPreset(params ? params.pdfPresetName : null);
+    if (selectedPreset && selectedPreset.isValid) {
+        var presetProps = [
+            "acrobatCompatibility", "colorBitmapCompression", "colorBitmapQuality",
+            "colorBitmapSampling", "colorBitmapSamplingDPI", "compressTextAndLineArt",
+            "cropImagesToFrames", "exportGuidesAndGrids", "exportLayers",
+            "exportNonprintingObjects", "generateThumbnails", "grayscaleBitmapCompression",
+            "grayscaleBitmapQuality", "grayscaleBitmapSampling", "grayscaleBitmapSamplingDPI",
+            "includeBookmarks", "includeHyperlinks", "includeICCProfiles",
+            "monochromeBitmapCompression", "monochromeBitmapSampling", "monochromeBitmapSamplingDPI",
+            "pdfColorSpace", "pdfDestinationProfile", "pdfXProfile", "standardsCompliance"
+        ];
+        for (var prIdx = 0; prIdx < presetProps.length; prIdx++) {
+            var prKey = presetProps[prIdx];
+            try {
+                if (typeof selectedPreset[prKey] !== "undefined") {
+                    app.pdfExportPreferences[prKey] = selectedPreset[prKey];
+                }
+            } catch (ePrp) { }
+        }
+    }
+
+    // Explicitly enforce imposition-critical rules: document bleeds, single pages, lossless quality
     app.pdfExportPreferences.useDocumentBleedWithPDF = params.useDocBleed;
     if (!params.useDocBleed) {
         app.pdfExportPreferences.bleedTop = params.customBleed;
@@ -4659,9 +5733,13 @@ function executeImposition(srcDoc, params) {
     }
 
     try { app.pdfExportPreferences.exportReaderSpreads = false; } catch (e) { }
-    try { app.pdfExportPreferences.acrobatCompatibility = AcrobatCompatibility.ACROBAT_5; } catch (e) { }
+    try {
+        if (!selectedPreset || !selectedPreset.isValid) {
+            app.pdfExportPreferences.acrobatCompatibility = AcrobatCompatibility.ACROBAT_5;
+        }
+    } catch (e) { }
 
-    // Apply Lossless No-Downsampling settings for Temporary PDF
+    // Apply Lossless No-Downsampling settings for Temporary PDF (prevents compression artifacts on placed flats)
     try {
         app.pdfExportPreferences.colorBitmapSampling = Sampling.NONE;
         app.pdfExportPreferences.colorBitmapCompression = BitmapCompression.ZIP;
@@ -4670,17 +5748,8 @@ function executeImposition(srcDoc, params) {
         app.pdfExportPreferences.monochromeBitmapSampling = Sampling.NONE;
         app.pdfExportPreferences.monochromeBitmapCompression = BitmapCompression.ZIP;
     } catch(e) {}
-    if (!params.useDocBleed) {
-        app.pdfExportPreferences.bleedTop = params.customBleed;
-        app.pdfExportPreferences.bleedBottom = params.customBleed;
-        app.pdfExportPreferences.bleedInside = params.customBleed;
-        app.pdfExportPreferences.bleedOutside = params.customBleed;
-    }
 
-    try { app.pdfExportPreferences.exportReaderSpreads = false; } catch (e) { }
-    try { app.pdfExportPreferences.acrobatCompatibility = AcrobatCompatibility.ACROBAT_5; } catch (e) { }
-
-    // Export without interactive dialogs, using active preferences
+    // Export without interactive dialogs, using active preferences (which guarantee document bleeds and lossless compression)
     app.scriptPreferences.userInteractionLevel = UserInteractionLevels.neverInteract;
     try {
         srcDoc.exportFile(ExportFormat.PDF_TYPE, tempPDF, false);
@@ -4726,6 +5795,15 @@ function executeImposition(srcDoc, params) {
     var placedBleed = testDoc.pages.item(0).place(tempPDF, [0, 0])[0];
     var bleedBounds = placedBleed.parent.geometricBounds; // [T, L, B, R]
     placedBleed.parent.remove();
+
+    var mediaBounds = bleedBounds;
+    try {
+        app.pdfPlacePreferences.pdfCrop = PDFCrop.CROP_MEDIA;
+        var placedMedia = testDoc.pages.item(0).place(tempPDF, [0, 0])[0];
+        mediaBounds = placedMedia.parent.geometricBounds;
+        placedMedia.parent.remove();
+    } catch (eMed) { }
+
     testDoc.close(SaveOptions.NO);
 
     // Calculate concentric bleed offsets (TrimBox and BleedBox share the same center)
@@ -4733,6 +5811,8 @@ function executeImposition(srcDoc, params) {
     var trimHeight = trimBounds[2] - trimBounds[0];
     var bleedWidth = bleedBounds[3] - bleedBounds[1];
     var trimWidth = trimBounds[3] - trimBounds[1];
+    var mediaHeight = mediaBounds[2] - mediaBounds[0];
+    var mediaWidth = mediaBounds[3] - mediaBounds[1];
 
     var pdfBleedY = (bleedHeight - trimHeight) / 2;
     var pdfBleedX = (bleedWidth - trimWidth) / 2;
@@ -4917,6 +5997,7 @@ function executeImposition(srcDoc, params) {
 
     // Process each sheet side
     var totalFlats = sequence.sheets.length;
+    var flatsMapping = [];
     for (var fIdx = 0; fIdx < totalFlats; fIdx++) {
         var sheetObj = sequence.sheets[fIdx];
         var markItems = [];
@@ -5038,6 +6119,22 @@ function executeImposition(srcDoc, params) {
                         }
                     }
                 }
+
+                // Record mapping for Job Report
+                var isCurDoubleSided = (sheetObj && sheetObj.workStyle === 0);
+                var curSheetNum = isCurDoubleSided ? (Math.floor(fIdx / 2) + 1) : (fIdx + 1);
+                var curSideStr = isBack ? (initialLang === "ru" ? "Оборот" : "Back") : (initialLang === "ru" ? "Лицо" : "Front");
+                flatsMapping.push({
+                    flatNum: fIdx + 1,
+                    sheetNum: curSheetNum,
+                    isBack: isBack,
+                    sideStr: curSideStr,
+                    col: c + 1,
+                    row: r + 1,
+                    pageNum: cell.pageNum,
+                    rotation: (cell.rotation || 0) + (isBack && params.rotateBacks ? 180 : 0),
+                    shiftX: shiftX
+                });
                 var actualBleedX = pdfBleedX;
                 var actualBleedY = pdfBleedY;
                 var frameTop = Y - actualBleedY;
@@ -5456,6 +6553,50 @@ function executeImposition(srcDoc, params) {
                 } catch (e2) { }
             }
             textFrame.textFramePreferences.verticalJustification = VerticalJustification.TOP_ALIGN;
+
+            // If Perfect Bound 1x1 mode with Creep, also output the big/creep number at the bottom (3mm to the right of the big)
+            if (impIdx === 1 && sequence.pagesAcross === 1) {
+                try {
+                    var curSheetObj = (sequence.sheets && p < sequence.sheets.length) ? sequence.sheets[p] : null;
+                    var isPageBack = curSheetObj ? curSheetObj.isBack : (p % 2 === 1);
+                    var isDoubleSided = (sequence.sheets && sequence.sheets.length > 0 && sequence.sheets[0].workStyle === 0);
+                    var sheetIdx = isDoubleSided ? Math.floor(p / 2) : p;
+                    var totalPhysSheets = (sequence.sheets && sequence.sheets.length > 0) ? (isDoubleSided ? Math.ceil(sequence.sheets.length / 2) : sequence.sheets.length) : 1;
+                    var sigSize = (sequence.sheetsPerSignature > 0) ? sequence.sheetsPerSignature : totalPhysSheets;
+                    var sheetInSig = (sigSize > 0) ? (sheetIdx % sigSize) : sheetIdx;
+                    var outerVal = (params.creepOuter || 0);
+                    var step = (outerVal !== 0 && sigSize > 1) ? (outerVal / (sigSize - 1)) : 0;
+                    var curShiftVal = sheetInSig * step;
+                    if (isPageBack) curShiftVal = -curShiftVal;
+
+                    var curPurHinge = params.purHinge || 0;
+                    var bigBaseX = bleedOffsetX + (isPageBack ? W : (curPurHinge > 0 ? curPurHinge : 0));
+                    if (params.shiftHinge !== false) {
+                        bigBaseX += curShiftVal;
+                    }
+                    var bigSheetX = bigBaseX + moveX;
+                    var bLeft = bigSheetX + convertUnits(3, "mm", params.unitStr);
+                    var bWidth = convertUnits(20, "mm", params.unitStr);
+                    var bHeight = convertUnits(3.0, "mm", params.unitStr);
+
+                    var bleedBlockBottom = postBounds ? (bleedOffsetY + moveY + H + pdfBleedY) : (bleedOffsetY + H);
+                    var bTop = bleedBlockBottom + convertUnits(0.5, "mm", params.unitStr);
+
+                    var creepNumText = Math.abs(curShiftVal).toFixed(2);
+
+                    var bigTextFrame = pg.textFrames.add();
+                    bigTextFrame.geometricBounds = [bTop, bLeft, bTop + bHeight, bLeft + bWidth];
+                    bigTextFrame.contents = creepNumText;
+                    var bPara = bigTextFrame.parentStory.paragraphs.item(0);
+                    bPara.pointSize = fontSizePt;
+                    try {
+                        bPara.appliedFont = app.fonts.item("Arial");
+                    } catch (eF1) {
+                        try { bPara.appliedFont = app.fonts.item("Minion Pro"); } catch (eF2) { }
+                    }
+                    bigTextFrame.textFramePreferences.verticalJustification = VerticalJustification.TOP_ALIGN;
+                } catch (eBigNum) { }
+            }
         }
     }
 
@@ -5472,8 +6613,107 @@ function executeImposition(srcDoc, params) {
         app.activeWindow.transformReferencePoint = AnchorPoint.CENTER_ANCHOR;
     } catch (e) { }
 
+    var jobReportFile = null;
+    if (params.generateJobReport) {
+        try {
+            var impNames = (translations[initialLang] && translations[initialLang].imp_types) ? translations[initialLang].imp_types : [];
+            var curImpStr = (impIdx >= 0 && impIdx < impNames.length) ? impNames[impIdx] : ("Type " + impIdx);
+            var wsNames = (translations[initialLang] && translations[initialLang].work_styles) ? translations[initialLang].work_styles : ["Sheetwise", "Work & Turn", "Work & Tumble", "Simplex"];
+            var curWsStr = (params.workStyle >= 0 && params.workStyle < wsNames.length) ? wsNames[params.workStyle] : "Sheetwise";
+
+            var srcDocPathStr = "";
+            try {
+                if (srcDoc && srcDoc.saved) {
+                    srcDocPathStr = srcDoc.filePath.fsName + "\\" + srcDoc.name;
+                }
+            } catch (ePth) { }
+
+            var reportData = {
+                lang: initialLang,
+                srcDoc: srcDoc,
+                srcDocName: (srcDoc && srcDoc.name) ? srcDoc.name : "Document",
+                srcDocPath: srcDocPathStr,
+                docFolder: docFolder,
+                docNameClean: docNameClean,
+                pdfPresetName: params.pdfPresetName || "[High Quality Print]",
+                srcPgsCount: totalPgs,
+                srcTrimW: docWidth,
+                srcTrimH: docHeight,
+                unitStr: params.unitStr || "mm",
+                bleedT: docBleedTop,
+                bleedB: docBleedBottom,
+                bleedL: docBleedLeft,
+                bleedR: docBleedRight,
+                pdfBoxes: {
+                    trimW: typeof trimWidth !== "undefined" ? trimWidth : docWidth,
+                    trimH: typeof trimHeight !== "undefined" ? trimHeight : docHeight,
+                    bleedW: typeof bleedWidth !== "undefined" ? bleedWidth : (docWidth + docBleedLeft + docBleedRight),
+                    bleedH: typeof bleedHeight !== "undefined" ? bleedHeight : (docHeight + docBleedTop + docBleedBottom),
+                    mediaW: typeof mediaWidth !== "undefined" ? mediaWidth : (docWidth + docBleedLeft + docBleedRight),
+                    mediaH: typeof mediaHeight !== "undefined" ? mediaHeight : (docHeight + docBleedTop + docBleedBottom),
+                    bleedOffsetX: typeof pdfBleedX !== "undefined" ? pdfBleedX : docBleedLeft,
+                    bleedOffsetY: typeof pdfBleedY !== "undefined" ? pdfBleedY : docBleedTop
+                },
+                impTypeStr: curImpStr,
+                foldSchemeStr: (impIdx === 0 && params.foldScheme > 0) ? "8 pages (2x2)" : null,
+                workStyleStr: curWsStr,
+                sheetFormatName: params.sheetFormatName || "Custom",
+                sheetW: typeof targetSheetW !== "undefined" ? targetSheetW : (params.sheetWidth || docWidth),
+                sheetH: typeof targetSheetH !== "undefined" ? targetSheetH : (params.sheetHeight || docHeight),
+                impAreaW: (sequence && typeof W !== "undefined") ? (sequence.pagesAcross * W + (sHoriz || 0) * (sequence.pagesAcross - 1)) : (params.impWidth || docWidth),
+                impAreaH: (sequence && typeof H !== "undefined") ? (sequence.pagesDown * H + (sVert || 0) * (sequence.pagesDown - 1)) : (params.impHeight || docHeight),
+                cols: (sequence && sequence.pagesAcross) ? sequence.pagesAcross : (params.cols || 1),
+                rows: (sequence && sequence.pagesDown) ? sequence.pagesDown : (params.rows || 1),
+                totalUp: (sequence && sequence.pagesAcross && sequence.pagesDown) ? (sequence.pagesAcross * sequence.pagesDown) : ((params.cols || 1) * (params.rows || 1)),
+                marginLeft: mLeft,
+                marginTop: mTop,
+                marginRight: mRight,
+                marginBottom: mBottom,
+                spacingHoriz: sHoriz,
+                spacingVert: sVert,
+                addSheetBleed: params.addSheetBleed,
+                resetTrimBleed: params.resetTrimBleed,
+                enableCreep: params.enableCreep,
+                creepOuter: params.creepOuter,
+                creepInner: params.creepInner,
+                creepDirStr: (params.creepDirectionIndex === 1) ? "Outwards" : "Inwards",
+                coverPaperStr: params.coverPaperStr || "",
+                blockPaperStr: params.blockPaperStr || "",
+                compensateThickness: params.compensateThickness,
+                compensateCoeff: params.compensateCoeff,
+                purHinge: params.purHinge,
+                shiftHinge: params.shiftHinge,
+                rotateBacks: params.rotateBacks,
+                drawMarks: params.drawMarks,
+                markLength: params.markLength,
+                markThickness: params.markThickness,
+                markOffsetTB: params.markOffsetTB,
+                markOffsetLR: params.markOffsetLR,
+                drawCenterMark: params.drawCenterMark,
+                infoSlug: params.infoSlug,
+                slugFontSize: params.slugFontSize,
+                flatsCount: totalFlats,
+                isDoubleSided: (sequence && sequence.sheets && sequence.sheets.length > 0 && sequence.sheets[0].workStyle === 0),
+                flatsMapping: (typeof flatsMapping !== "undefined" && flatsMapping) ? flatsMapping : []
+            };
+            jobReportFile = generateAndSaveJobReport(reportData);
+        } catch (eRep) {
+            try { alert("Report Data Error: " + eRep.message + " (line " + eRep.line + ")"); } catch (eAlert2) { }
+        }
+    }
+
     if (!params.isTwoPassIntermediate) {
-        alert(translations[initialLang].alert_success + totalFlats);
+        var succStr = (typeof translations !== "undefined" && translations[initialLang] && translations[initialLang].alert_success) ? translations[initialLang].alert_success : "Success! Total flats: ";
+        if (jobReportFile && jobReportFile.exists) {
+            var msgSaved = (typeof translations !== "undefined" && translations[initialLang] && translations[initialLang].msg_job_report_saved) ? translations[initialLang].msg_job_report_saved : "Imposition Job Report saved to:\n";
+            var msgOpen = (typeof translations !== "undefined" && translations[initialLang] && translations[initialLang].msg_open_job_report) ? translations[initialLang].msg_open_job_report : "Open Job Report now?";
+            var userChoice = confirm(succStr + totalFlats + "\n\n" + msgSaved + jobReportFile.fsName + "\n\n" + msgOpen);
+            if (userChoice) {
+                try { jobReportFile.execute(); } catch (eExec) { }
+            }
+        } else {
+            alert(translations[initialLang].alert_success + totalFlats);
+        }
     }
     return targetDoc;
 }

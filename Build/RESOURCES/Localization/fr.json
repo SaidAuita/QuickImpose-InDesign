@@ -5,7 +5,7 @@
   "size": "Taille : ",
   "bleeds": "Fonds perdus : ",
   "about_title": "À propos de QuickImpose",
-  "about_text": "QuickImpose v2.0\n\nRemplacement open-source du plugin IDImposer.\nPrend en charge les versions modernes d'Adobe InDesign.\n\nAuteur : Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nRemplacement open-source du plugin IDImposer.\nPrend en charge les versions modernes d'Adobe InDesign.\n\nAuteur : Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Imposition et Unités",
   "lbl_imp_type": "Imposition :",
@@ -130,12 +130,14 @@
   "lbl_block_sheet_single": "Bloc ({0} feuille):",
   "lbl_block_sheet_multi": "Bloc ({0} feuilles):",
   "fold_schemes": [
-    "Auto (2 pages par planche)",
-    "Brochure 8 pages (8 pages / 2 plis)",
-    "Brochure 16 pages (16 pages / 3 plis)",
-    "Brochure 16 pages (16 pages / coupe)",
-    "Brochure 32 pages (32 pages / 4 plis)"
+    "Automatique (2 pages par planche)",
+    "Brochure 8 pages (8 pages / 2 plis)"
   ],
   "opt_duplex": "4+4 (Recto-verso)",
-  "opt_simplex": "4+0 (Recto)"
+  "opt_simplex": "4+0 (Recto)",
+  "pnl_pdf_export": "Exportation PDF",
+  "lbl_pdf_preset": "Paramètre PDF :",
+  "chk_job_report": "Générer le rapport d'imposition (Job Report .txt)",
+  "msg_job_report_saved": "Rapport d'imposition enregistré sous :\n",
+  "msg_open_job_report": "Ouvrir le rapport d'imposition maintenant ?"
 }

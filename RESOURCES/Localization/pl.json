@@ -5,7 +5,7 @@
   "size": "Rozmiar: ",
   "bleeds": "Spady: ",
   "about_title": "O programie QuickImpose",
-  "about_text": "QuickImpose v2.0\n\nOtwarty zamiennik wtyczki IDImposer.\nWspiera nowoczesne wersje Adobe InDesign.\n\nAutor: Said & Antigravity.",
+  "about_text": "QuickImpose v2.1\n\nOtwarty zamiennik wtyczki IDImposer.\nWspiera nowoczesne wersje Adobe InDesign.\n\nAutor: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Impozycja i Jednostki",
   "lbl_imp_type": "Impozycja:",
@@ -130,12 +130,14 @@
   "lbl_block_sheet_single": "Blok ({0} arkusz):",
   "lbl_block_sheet_multi": "Blok ({0} arkuszy):",
   "fold_schemes": [
-    "Auto (2 strony na arkusz)",
-    "Broszura 8-stronicowa (8 stron / 2 łamy)",
-    "Broszura 16-stronicowa (16 stron / 3 łamy)",
-    "Broszura 16-stronicowa (16 stron / cięcie)",
-    "Broszura 32-stronicowa (32 strony / 4 łamy)"
+    "Automatyczny (2 strony na rozkładówkę)",
+    "Broszura 8-stronicowa (8 stron / 2 falce)"
   ],
   "opt_duplex": "4+4 (Dwustronny)",
-  "opt_simplex": "4+0 (Jednostronny)"
+  "opt_simplex": "4+0 (Jednostronny)",
+  "pnl_pdf_export": "Eksport PDF",
+  "lbl_pdf_preset": "Ustawienie PDF:",
+  "chk_job_report": "Generuj raport impozycji (Job Report .txt)",
+  "msg_job_report_saved": "Raport impozycji zapisany w:\n",
+  "msg_open_job_report": "Otworzyć raport impozycji teraz?"
 }
