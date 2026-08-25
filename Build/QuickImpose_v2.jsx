@@ -96,12 +96,12 @@ var uiLabels = {};
 
 var translations = {
     ru: {
-        title: "QuickImpose v2.1 — Спуск полос",
+        title: "QuickImpose v2.2 — Спуск полос",
         file: "Файл: ",
         pages: " стр.",
         size: "Размер: ",
         bleeds: "Вылеты: ",
-        about_text: "QuickImpose v2.1\n\nПоддерживаются современные версии Adobe InDesign.\nТестировалось на версии 2026.\n\nАвтор: Said & Antigravity.",
+        about_text: "QuickImpose v2.2\n\nПоддерживаются современные версии Adobe InDesign.\nТестировалось на версии 2026.\n\nАвтор: Said & Antigravity.",
         btn_about: "?",
         pnl_type_units: "Спуск и Единицы",
         lbl_imp_type: "Тип спуска:",
@@ -224,12 +224,12 @@ var translations = {
         opt_rotate_off: "Отключено"
     },
     en: {
-        title: "QuickImpose v2.1 — Imposition",
+        title: "QuickImpose v2.2 — Imposition",
         file: "File: ",
         pages: " pages",
         size: "Size: ",
         bleeds: "Bleeds: ",
-        about_text: "QuickImpose v2.1\n\nSupports modern versions of Adobe InDesign.\nTested on version 2026.\n\nAuthor: Said & Antigravity.",
+        about_text: "QuickImpose v2.2\n\nSupports modern versions of Adobe InDesign.\nTested on version 2026.\n\nAuthor: Said & Antigravity.",
         btn_about: "?",
         pnl_type_units: "Imposition and Units",
         lbl_imp_type: "Imposition:",
@@ -2956,6 +2956,32 @@ function runQuickImpose() {
             var chkUniformAfter = pnlBleedInput.add("checkbox", undefined, tObj.chk_uniform_after || "Make Uniform After Import");
             chkUniformAfter.value = true;
 
+            var grpInset = pnlBleedInput.add("group");
+            grpInset.orientation = "row";
+            grpInset.alignChildren = ["left", "center"];
+            grpInset.spacing = 6;
+            var chkInset = grpInset.add("checkbox", undefined, tObj.chk_fit_inset || "Fit with Inset:");
+            chkInset.value = (lastParams && lastParams.pdfUseInset !== undefined) ? lastParams.pdfUseInset : false;
+            var editInset = grpInset.add("edittext", undefined, String((lastParams && lastParams.pdfInsetVal !== undefined) ? lastParams.pdfInsetVal : "5.0"));
+            editInset.characters = 4;
+            editInset.enabled = chkInset.value;
+            var lblInsetCalc = grpInset.add("statictext", undefined, "");
+            lblInsetCalc.characters = 28;
+
+            function updateInsetCalc() {
+                var iVal = parseSafeFloat(editInset.text) || 0;
+                var topB = parseSafeFloat(editTop.text) || 0;
+                var diff = Math.round((iVal - topB) * 100) / 100;
+                lblInsetCalc.text = " (" + iVal + " - " + topB + " = " + diff + " " + (tObj.unit_mm || "mm") + ")";
+            }
+
+            chkInset.onClick = function () {
+                editInset.enabled = chkInset.value;
+                lblInsetCalc.enabled = chkInset.value;
+            };
+            editInset.onChange = updateInsetCalc;
+            editInset.onChanging = updateInsetCalc;
+
             var grpRotate = pnlBleedInput.add("group");
             grpRotate.orientation = "row";
             grpRotate.alignChildren = ["left", "center"];
@@ -3006,6 +3032,7 @@ function runQuickImpose() {
                 var trimW = Math.max(1, pdfDim.width - insB - outB);
                 var trimH = Math.max(1, pdfDim.height - topB - botB);
                 txtTrimCalc.text = (tObj.lbl_trim_calc || "Trim: ") + trimW.toFixed(1) + " × " + trimH.toFixed(1) + " " + (tObj.unit_mm || "mm");
+                updateInsetCalc();
             }
 
             editTop.onChange = handleTopChange;
@@ -3058,6 +3085,8 @@ function runQuickImpose() {
             var rotateIdx = (ddlRotate && ddlRotate.selection) ? ddlRotate.selection.index : 0;
             if (!lastParams) lastParams = {};
             lastParams.pdfAutoRotate = rotateIdx;
+            lastParams.pdfUseInset = chkInset.value;
+            lastParams.pdfInsetVal = editInset.text;
         }
 
         var autoRotateMode = "ccw";
@@ -3065,6 +3094,9 @@ function runQuickImpose() {
             if (lastParams.pdfAutoRotate === 1) autoRotateMode = "cw";
             else if (lastParams.pdfAutoRotate === 2) autoRotateMode = "off";
         }
+
+        var applyInset = (typeof chkInset !== "undefined") ? (chkInset.value && parseSafeFloat(editInset.text) > 0) : ((lastParams && lastParams.pdfUseInset) || false);
+        var insetVal = (typeof editInset !== "undefined") ? (parseSafeFloat(editInset.text) || 0) : ((lastParams && parseSafeFloat(lastParams.pdfInsetVal)) || 0);
 
         var trimW = Math.max(1, pdfDim.width - iB - oB);
         var trimH = Math.max(1, pdfDim.height - tB - bB);
@@ -3075,6 +3107,7 @@ function runQuickImpose() {
 
         var docTrimW = convertUnits(trimW, "mm", targetUnitStr);
         var docTrimH = convertUnits(trimH, "mm", targetUnitStr);
+        var d_inset = convertUnits(insetVal, "mm", targetUnitStr);
         
         var d_tB = convertUnits(tB, "mm", targetUnitStr);
         var d_bB = convertUnits(bB, "mm", targetUnitStr);
@@ -3119,7 +3152,10 @@ function runQuickImpose() {
                 var leftBleed = isOdd ? d_iB : d_oB;
                 var rightBleed = isOdd ? d_oB : d_iB;
 
-                var rectBounds = [-d_tB, -leftBleed, docTrimH + d_bB, docTrimW + rightBleed];
+                var rectBounds = (applyInset && (docTrimW > d_inset * 2) && (docTrimH > d_inset * 2))
+                    ? [d_inset, d_inset, docTrimH - d_inset, docTrimW - d_inset]
+                    : [-d_tB, -leftBleed, docTrimH + d_bB, docTrimW + rightBleed];
+
                 var frame = page.rectangles.add({
                     geometricBounds: rectBounds,
                     strokeWeight: 0,
@@ -3153,7 +3189,15 @@ function runQuickImpose() {
                     }
                 }
 
-                try { frame.fit(FitOptions.CENTER_CONTENT); } catch (e) { }
+                if (applyInset && (docTrimW > d_inset * 2) && (docTrimH > d_inset * 2)) {
+                    try {
+                        frame.fit(FitOptions.PROPORTIONALLY);
+                        frame.fit(FitOptions.CENTER_CONTENT);
+                        frame.geometricBounds = [-d_tB, -leftBleed, docTrimH + d_bB, docTrimW + rightBleed];
+                    } catch (eFit) {}
+                } else {
+                    try { frame.fit(FitOptions.CENTER_CONTENT); } catch (e) { }
+                }
             }
         } finally {
             app.scriptPreferences.enableRedraw = true;

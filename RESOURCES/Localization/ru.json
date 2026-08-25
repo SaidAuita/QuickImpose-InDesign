@@ -1,11 +1,11 @@
 {
-  "title": "QuickImpose v2.1 — Спуск полос",
+  "title": "QuickImpose v2.2 — Спуск полос",
   "file": "Файл: ",
   "pages": " стр.",
   "size": "Размер: ",
   "bleeds": "Вылеты: ",
   "about_title": "О программе QuickImpose",
-  "about_text": "QuickImpose v2.1\n\nОткрытая замена для плагина IDImposer.\nПоддерживает современные версии Adobe InDesign.\n\nАвтор: Said & Antigravity.",
+  "about_text": "QuickImpose v2.2\n\nОткрытая замена для плагина IDImposer.\nПоддерживает современные версии Adobe InDesign.\n\nАвтор: Said & Antigravity.",
   "btn_about": "?",
   "pnl_type_units": "Спуск и Единицы",
   "lbl_imp_type": "Тип спуска:",

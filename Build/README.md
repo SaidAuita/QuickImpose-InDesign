@@ -1,4 +1,4 @@
-# QuickImpose v2.1
+# QuickImpose v2.2
 
 **QuickImpose** is a professional, fast, and feature-rich ExtendScript script for sheet imposition in Adobe InDesign and PDF documents. It supports modern versions of InDesign (tested on version 2026).
 
@@ -12,6 +12,16 @@
 
 ---
 
+## 🚀 What's New in v2.2
+
+* **Fit with Inset (Proportional Inner Fitting)**: Proportional inner shrinking of PDF pages into safe margins (default 5 mm / 0.2 in) while preserving outer crop/bleed bounds. Available in `PDF_Import.jsx` and the built-in QuickImpose PDF import dialog.
+* **Live Trim & Inset Calculation**: Dynamic formula display `(Margin - Bleed = Clean margin)` showing exact remaining safe margin after guillotine cutting.
+* **PDF Auto-Rotation Options**: Automatic rotation of landscape/portrait PDF pages to match document orientation (Counter-clockwise -90°, Clockwise +90°, or Off).
+* **Uniform Bleeds After Import**: Easy toggle to normalize asymmetric source bleed boxes into uniform document bleed offsets.
+* **Dual Footer Hyperlinks**: Integrated clickable links for the GitHub repository and free tools hub.
+
+---
+
 ## 🚀 What's New in v2.1
 
 * **Adobe PDF Export Preset Selection (`.joboptions`)**: Choose any PDF export preset installed in Adobe InDesign (e.g. `[High Quality Print]`, `[Press Quality]`, `PDF/X-4`, `QuickImpose`, etc.) directly from the imposition UI.
@@ -20,12 +30,8 @@
   * **Guaranteed Bleed Preservation**: Automatically forces `useDocumentBleedWithPDF = true` (or custom user bleed) to prevent accidental cropping even if the selected preset has 0 mm bleed.
   * **Lossless Intermediate Quality**: Disables lossy downsampling (`Sampling.NONE`, `ZIP` compression) for intermediate PDF pages to eliminate raster/vector compression artifacts.
   * **Single Page Stream**: Enforces `exportReaderSpreads = false` so individual pages are accurately placed on flats.
-* **Production Job Report (.txt) in 10 Languages**: Automatically produces a comprehensive production audit report saved alongside the imposed document. It includes:
-  * PDF Box metrics (`TrimBox`, `BleedBox`, `MediaBox` measurements)
-  * Sheet dimensions, layout grid, margins, and gutters
-  * Postpress parameters (Creep direction, outer/inner shifts, paper stock, PUR hinge)
-  * Complete **Signature Mapping** table listing flat number, physical sheet, Front/Back side, grid coordinates, page numbers, rotation angles, and exact individual creep/hinge shifts.
-* **KBC / Perfect Bound 1x1 Creep Indicator**: When the Info Slug option is enabled in 1-page Perfect Bound mode, the exact crease/big shift value (in mm) is printed at the bottom margin 3 mm to the right of the crease mark, facilitating quick machine setup.
+* **Production Job Report (.txt) in 10 Languages**: Automatically produces a comprehensive production audit report saved alongside the imposed document.
+* **KBC / Perfect Bound 1x1 Creep Indicator**: When the Info Slug option is enabled in 1-page Perfect Bound mode, the exact crease/big shift value (in mm) is printed at the bottom margin.
 * **Two-Pass 2x2 Saddle Stitch Creep Mapping**: Full signature mapping with exact first-pass creep values tracked and documented for all 8 pages of each signature.
 * **Included Test File**: Ready-to-use template `test_idml/210x210_24.idml` included in the repository for testing and validating all imposition modes.
 
@@ -122,6 +128,16 @@ Once installed, **QuickImpose** will be selectable in the PDF Export Preset drop
 
 **QuickImpose** — это профессиональный, быстрый и многофункциональный ExtendScript-скрипт для автоматизации спуска полос (imposition) в Adobe InDesign.
 
+### 🚀 Что нового в v2.2
+
+* **Вписать с отступом (Fit with Inset)**: Пропорциональное вписывание страниц PDF внутрь безопасного отступа (по умолчанию 5 мм) с автоматическим сохранением исходных вылетов под обрез. Доступно в `PDF_Import.jsx` и во встроенном диалоге импорта PDF в QuickImpose.
+* **Живой расчет чистого отступа**: Динамическая формула `(Отступ - Вылеты = Чистый отступ)` в интерфейсе (например, `(5 - 3 = 2 мм)`), наглядно показывающая реальный отступ макета после порезки.
+* **Автоповорот страниц PDF при импорте**: Возможность автоматически поворачивать ориентацию страниц PDF под ориентацию документа (Против часовой –90°, По часовой +90° или Отключено).
+* **Сделать вылеты одинаковыми**: Опция нормализации асимметричных вылетов импортированного PDF в единые симметричные поля документа InDesign.
+* **Кликабельные ссылки в подвале**: Интерактивные ссылки на репозиторий GitHub и каталог бесплатных инструментов.
+
+---
+
 ### 🚀 Что нового в v2.1
 
 * **Выбор пресета экспорта Adobe PDF (.joboptions)**: Выбор любого установленного пресета экспорта PDF (по умолчанию `[High Quality Print]` или пользовательские пресеты `QuickImpose`) прямо в окне спуска.
@@ -135,7 +151,7 @@ Once installed, **QuickImpose** will be selectable in the PDF Export Preset drop
   * Размеров печатного листа, полей, распорок и общего числа спусков
   * Параметров постпресса (направление Creep, сдвиги, бумага, PUR)
   * Таблицы **Signature Mapping** с разбивкой полос по спускам, сторонам (Лицо/Оборот), углам поворота и точным сдвигам Creep/PUR.
-* **Индикация смещения биговки в КБС 1x1**: При включенной опции «Инфо» внизу листа рядом с линией биговки (на 3 мм правее) выводится числовое значение смещения в миллиметрах для быстрой перенастройки биговального оборудования.
+* **Индикация смещения биговки в КБС 1x1**: При включенной опции «Инфо» внизу листа рядом с линией биговки выводится числовое значение смещения в миллиметрах.
 * **Поддержка 2x2 Saddle Stitch**: Полный расчет раскладки тетрадей по 8 полос с точной фиксацией сдвигов первого прохода в отчете.
 * **Тестовый файл**: В репозиторий добавлен тестовый макет `test_idml/210x210_24.idml` для проверки всех типов спусков.
 

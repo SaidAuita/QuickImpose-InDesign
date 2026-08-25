@@ -22,6 +22,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Настройки вылета (Bleed)",
             lbl_bleed_input: "Вылет под обрез (мм): ",
             lbl_trim_calc: "Размер страницы (Trim): ",
+            chk_fit_inset: "Вписать с отступом (Inset):",
             lbl_auto_rotate: "Автоповорот: ",
             opt_rotate_ccw: "Против часовой (–90°)",
             opt_rotate_cw: "По часовой (+90°)",
@@ -41,6 +42,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Bleed Settings",
             lbl_bleed_input: "Bleed (mm): ",
             lbl_trim_calc: "Page Size (Trim): ",
+            chk_fit_inset: "Fit with Inset:",
             lbl_auto_rotate: "Auto-rotate: ",
             opt_rotate_ccw: "Counter-clockwise (–90°)",
             opt_rotate_cw: "Clockwise (+90°)",
@@ -60,6 +62,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Anschnitt-Einstellungen (Bleed)",
             lbl_bleed_input: "Anschnitt (mm): ",
             lbl_trim_calc: "Seitengröße (Trim): ",
+            chk_fit_inset: "Mit Einzug einpassen (Inset):",
             lbl_auto_rotate: "Auto-Drehung: ",
             opt_rotate_ccw: "Gegen den Uhrzeigersinn (–90°)",
             opt_rotate_cw: "Im Uhrzeigersinn (+90°)",
@@ -79,6 +82,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Ajustes de sangrado (Bleed)",
             lbl_bleed_input: "Sangrado (mm): ",
             lbl_trim_calc: "Tamaño de página (Trim): ",
+            chk_fit_inset: "Ajustar con margen int. (Inset):",
             lbl_auto_rotate: "Rotación auto.: ",
             opt_rotate_ccw: "Antihorario (–90°)",
             opt_rotate_cw: "Horario (+90°)",
@@ -98,6 +102,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Réglages du fond perdu (Bleed)",
             lbl_bleed_input: "Fond perdu (mm) : ",
             lbl_trim_calc: "Taille de page (Trim) : ",
+            chk_fit_inset: "Ajuster avec marge int. (Inset) :",
             lbl_auto_rotate: "Rotation auto : ",
             opt_rotate_ccw: "Sens antihoraire (–90°)",
             opt_rotate_cw: "Sens horaire (+90°)",
@@ -117,6 +122,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Impostazioni abbondanza (Bleed)",
             lbl_bleed_input: "Abbondanza (mm): ",
             lbl_trim_calc: "Dimensione pagina (Trim): ",
+            chk_fit_inset: "Adatta con margine int. (Inset):",
             lbl_auto_rotate: "Rotazione auto: ",
             opt_rotate_ccw: "Antiorario (–90°)",
             opt_rotate_cw: "Orario (+90°)",
@@ -136,6 +142,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "裁ち落とし設定 (Bleed)",
             lbl_bleed_input: "裁ち落とし (mm): ",
             lbl_trim_calc: "仕上がりサイズ (Trim): ",
+            chk_fit_inset: "インセットで合わせる (Inset):",
             lbl_auto_rotate: "自動回転: ",
             opt_rotate_ccw: "反時計回り (–90°)",
             opt_rotate_cw: "時計回り (+90°)",
@@ -155,6 +162,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Ustawienia spadów (Bleed)",
             lbl_bleed_input: "Spad pod obcięcie (mm): ",
             lbl_trim_calc: "Rozmiar strony (Trim): ",
+            chk_fit_inset: "Dopasuj z marginesem (Inset):",
             lbl_auto_rotate: "Auto-obrót: ",
             opt_rotate_ccw: "Przeciwnie do wskazówek zegara (–90°)",
             opt_rotate_cw: "Zgodnie ze wskazówkami zegara (+90°)",
@@ -174,6 +182,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "Definições de sangria (Bleed)",
             lbl_bleed_input: "Sangria (mm): ",
             lbl_trim_calc: "Tamanho da página (Trim): ",
+            chk_fit_inset: "Ajustar com margem int. (Inset):",
             lbl_auto_rotate: "Rotação auto.: ",
             opt_rotate_ccw: "Anti-horário (–90°)",
             opt_rotate_cw: "Horário (+90°)",
@@ -193,6 +202,7 @@ function parseSafeFloat(val) {
             pnl_bleed: "出血设置 (Bleed)",
             lbl_bleed_input: "出血 (mm): ",
             lbl_trim_calc: "页面尺寸 (Trim): ",
+            chk_fit_inset: "按内边距缩放 (Inset):",
             lbl_auto_rotate: "自动旋转: ",
             opt_rotate_ccw: "逆时针 (–90°)",
             opt_rotate_cw: "顺时针 (+90°)",
@@ -497,6 +507,32 @@ function parseSafeFloat(val) {
     var chkUniformAfter = pnlBleed.add("checkbox", undefined, t.chk_uniform_after || "Make Uniform After Import");
     chkUniformAfter.value = true;
 
+    var grpInset = pnlBleed.add("group");
+    grpInset.orientation = "row";
+    grpInset.alignChildren = ["left", "center"];
+    grpInset.spacing = 6;
+    var chkInset = grpInset.add("checkbox", undefined, t.chk_fit_inset || "Fit with Inset:");
+    chkInset.value = false;
+    var editInset = grpInset.add("edittext", undefined, "5.0");
+    editInset.characters = 4;
+    editInset.enabled = false;
+    var lblInsetCalc = grpInset.add("statictext", undefined, "");
+    lblInsetCalc.characters = 28;
+
+    function updateInsetCalc() {
+        var iVal = parseSafeFloat(editInset.text) || 0;
+        var tB = parseSafeFloat(editTop.text) || 0;
+        var diff = Math.round((iVal - tB) * 100) / 100;
+        lblInsetCalc.text = " (" + iVal + " - " + tB + " = " + diff + " " + t.unit_mm + ")";
+    }
+
+    chkInset.onClick = function () {
+        editInset.enabled = chkInset.value;
+        lblInsetCalc.enabled = chkInset.value;
+    };
+    editInset.onChange = updateInsetCalc;
+    editInset.onChanging = updateInsetCalc;
+
     var grpRotate = pnlBleed.add("group");
     grpRotate.orientation = "row";
     grpRotate.alignChildren = ["left", "center"];
@@ -544,6 +580,7 @@ function parseSafeFloat(val) {
         var trimW = Math.max(1, pdfDim.width - iB - oB);
         var trimH = Math.max(1, pdfDim.height - tB - bB);
         txtTrimCalc.text = t.lbl_trim_calc + trimW.toFixed(1) + " × " + trimH.toFixed(1) + " " + t.unit_mm;
+        updateInsetCalc();
     }
 
     editTop.onChange = handleTopChange;
@@ -579,6 +616,7 @@ function parseSafeFloat(val) {
         lblInside.text = (t.lbl_inside || "Inside") + ":";
         lblOutside.text = (t.lbl_outside || "Outside") + ":";
         chkUniformAfter.text = t.chk_uniform_after || "Make Uniform After Import";
+        if (typeof chkInset !== "undefined") chkInset.text = t.chk_fit_inset || "Fit with Inset:";
         if (typeof lblRotate !== "undefined") lblRotate.text = t.lbl_auto_rotate || "Auto-rotate:";
         if (typeof ddlRotate !== "undefined") {
             var prevSel = ddlRotate.selection ? ddlRotate.selection.index : 0;
@@ -653,6 +691,8 @@ function parseSafeFloat(val) {
     var bB = parseSafeFloat(editBottom.text) || 0;
     var iB = parseSafeFloat(editInside.text) || 0;
     var oB = parseSafeFloat(editOutside.text) || 0;
+    var applyInset = chkInset.value && (parseSafeFloat(editInset.text) > 0);
+    var insetVal = parseSafeFloat(editInset.text) || 0;
 
     var autoRotateMode = "ccw";
     if (ddlRotate && ddlRotate.selection) {
@@ -702,7 +742,10 @@ function parseSafeFloat(val) {
             var leftBleed = isOdd ? iB : oB;
             var rightBleed = isOdd ? oB : iB;
 
-            var rectBounds = [-tB, -leftBleed, trimH + bB, trimW + rightBleed];
+            var rectBounds = (applyInset && (trimW > insetVal * 2) && (trimH > insetVal * 2))
+                ? [insetVal, insetVal, trimH - insetVal, trimW - insetVal]
+                : [-tB, -leftBleed, trimH + bB, trimW + rightBleed];
+
             var frame = page.rectangles.add({
                 geometricBounds: rectBounds,
                 strokeWeight: 0
@@ -737,7 +780,15 @@ function parseSafeFloat(val) {
                 }
             }
 
-            try { frame.fit(FitOptions.CENTER_CONTENT); } catch (eFit) {}
+            if (applyInset && (trimW > insetVal * 2) && (trimH > insetVal * 2)) {
+                try {
+                    frame.fit(FitOptions.PROPORTIONALLY);
+                    frame.fit(FitOptions.CENTER_CONTENT);
+                    frame.geometricBounds = [-tB, -leftBleed, trimH + bB, trimW + rightBleed];
+                } catch (eFit) {}
+            } else {
+                try { frame.fit(FitOptions.CENTER_CONTENT); } catch (eFit) {}
+            }
         }
     } finally {
         app.scriptPreferences.enableRedraw = true;
