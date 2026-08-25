@@ -139,5 +139,9 @@
   "lbl_pdf_preset": "PDFプリセット:",
   "chk_job_report": "面付けジョブレポートを作成 (.txt)",
   "msg_job_report_saved": "面付けジョブレポートが保存されました:\n",
-  "msg_open_job_report": "今すぐジョブレポートを開きますか？"
+  "msg_open_job_report": "今すぐジョブレポートを開きますか？",
+  "lbl_auto_rotate": "自動回転:",
+  "opt_rotate_ccw": "反時計回り (–90°)",
+  "opt_rotate_cw": "時計回り (+90°)",
+  "opt_rotate_off": "オフ"
 }

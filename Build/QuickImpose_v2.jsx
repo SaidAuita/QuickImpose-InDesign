@@ -217,7 +217,11 @@ var translations = {
         btn_preview: "Схема",
         lbl_preview_theme: "Тема превью:",
         theme_dark: "Темная",
-        theme_light: "Светлая"
+        theme_light: "Светлая",
+        lbl_auto_rotate: "Автоповорот:",
+        opt_rotate_ccw: "Против часовой (–90°)",
+        opt_rotate_cw: "По часовой (+90°)",
+        opt_rotate_off: "Отключено"
     },
     en: {
         title: "QuickImpose v2.1 — Imposition",
@@ -341,7 +345,11 @@ var translations = {
         btn_preview: "Preview",
         lbl_preview_theme: "Preview Theme:",
         theme_dark: "Dark",
-        theme_light: "Light"
+        theme_light: "Light",
+        lbl_auto_rotate: "Auto-rotate:",
+        opt_rotate_ccw: "Counter-clockwise (–90°)",
+        opt_rotate_cw: "Clockwise (+90°)",
+        opt_rotate_off: "Off"
     }
 };
 
@@ -2948,6 +2956,21 @@ function runQuickImpose() {
             var chkUniformAfter = pnlBleedInput.add("checkbox", undefined, tObj.chk_uniform_after || "Make Uniform After Import");
             chkUniformAfter.value = true;
 
+            var grpRotate = pnlBleedInput.add("group");
+            grpRotate.orientation = "row";
+            grpRotate.alignChildren = ["left", "center"];
+            grpRotate.add("statictext", undefined, (tObj.lbl_auto_rotate || "Auto-rotate:"));
+            var ddlRotate = grpRotate.add("dropdownlist", undefined, [
+                tObj.opt_rotate_ccw || "Counter-clockwise (-90°)",
+                tObj.opt_rotate_cw || "Clockwise (+90°)",
+                tObj.opt_rotate_off || "Off"
+            ]);
+            var savedRotateIdx = 0;
+            if (lastParams && lastParams.pdfAutoRotate !== undefined) {
+                savedRotateIdx = lastParams.pdfAutoRotate;
+            }
+            ddlRotate.selection = savedRotateIdx;
+
             var txtTrimCalc = pnlBleedInput.add("statictext", undefined, "");
             txtTrimCalc.preferredSize.width = 360;
 
@@ -3031,6 +3054,16 @@ function runQuickImpose() {
             oB = parseSafeFloat(editOutside.text) || 0;
             makeUniform = chkUniformAfter.value;
             askPdfBleed = chkAskBleed.value;
+
+            var rotateIdx = (ddlRotate && ddlRotate.selection) ? ddlRotate.selection.index : 0;
+            if (!lastParams) lastParams = {};
+            lastParams.pdfAutoRotate = rotateIdx;
+        }
+
+        var autoRotateMode = "ccw";
+        if (lastParams && lastParams.pdfAutoRotate !== undefined) {
+            if (lastParams.pdfAutoRotate === 1) autoRotateMode = "cw";
+            else if (lastParams.pdfAutoRotate === 2) autoRotateMode = "off";
         }
 
         var trimW = Math.max(1, pdfDim.width - iB - oB);
@@ -3093,7 +3126,33 @@ function runQuickImpose() {
                     strokeColor: "None",
                     fillColor: "None"
                 });
-                safePlacePDF(frame, selectedPdf, pageNum);
+                var pdfItem = safePlacePDF(frame, selectedPdf, pageNum);
+
+                if (!pdfItem && frame.allGraphics && frame.allGraphics.length > 0) {
+                    pdfItem = frame.allGraphics[0];
+                }
+                if (!pdfItem && frame.pdfs && frame.pdfs.length > 0) {
+                    pdfItem = frame.pdfs[0];
+                }
+
+                if (pdfItem && autoRotateMode !== "off") {
+                    var b = pdfItem.geometricBounds;
+                    var itemW = Math.abs(b[3] - b[1]);
+                    var itemH = Math.abs(b[2] - b[0]);
+
+                    var isSlotLandscape = docTrimW > docTrimH;
+                    var isPageLandscape = itemW > itemH;
+
+                    if (Math.abs(itemW - itemH) > 0.5 && isSlotLandscape !== isPageLandscape) {
+                        if (autoRotateMode === "cw") {
+                            pdfItem.rotationAngle = -90;
+                        } else {
+                            // "ccw" default (counter-clockwise)
+                            pdfItem.rotationAngle = 90;
+                        }
+                    }
+                }
+
                 try { frame.fit(FitOptions.CENTER_CONTENT); } catch (e) { }
             }
         } finally {

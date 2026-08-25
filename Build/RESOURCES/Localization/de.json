@@ -139,5 +139,9 @@
   "lbl_pdf_preset": "PDF-Vorgabe:",
   "chk_job_report": "Ausschießbericht erstellen (Job Report .txt)",
   "msg_job_report_saved": "Ausschießbericht gespeichert unter:\n",
-  "msg_open_job_report": "Ausschießbericht jetzt öffnen?"
+  "msg_open_job_report": "Ausschießbericht jetzt öffnen?",
+  "lbl_auto_rotate": "Auto-Drehung:",
+  "opt_rotate_ccw": "Gegen den Uhrzeigersinn (–90°)",
+  "opt_rotate_cw": "Im Uhrzeigersinn (+90°)",
+  "opt_rotate_off": "Aus"
 }

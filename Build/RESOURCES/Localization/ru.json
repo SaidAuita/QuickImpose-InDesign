@@ -148,5 +148,9 @@
   "lbl_pdf_preset": "PDF Пресет:",
   "chk_job_report": "Создавать технический отчет (Job Report .txt)",
   "msg_job_report_saved": "Отчет о спуске сохранен в файл:\n",
-  "msg_open_job_report": "Открыть созданный отчет сейчас?"
+  "msg_open_job_report": "Открыть созданный отчет сейчас?",
+  "lbl_auto_rotate": "Автоповорот:",
+  "opt_rotate_ccw": "Против часовой (–90°)",
+  "opt_rotate_cw": "По часовой (+90°)",
+  "opt_rotate_off": "Отключено"
 }

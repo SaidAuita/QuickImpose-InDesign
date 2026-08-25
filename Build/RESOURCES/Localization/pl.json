@@ -139,5 +139,9 @@
   "lbl_pdf_preset": "Ustawienie PDF:",
   "chk_job_report": "Generuj raport impozycji (Job Report .txt)",
   "msg_job_report_saved": "Raport impozycji zapisany w:\n",
-  "msg_open_job_report": "Otworzyć raport impozycji teraz?"
+  "msg_open_job_report": "Otworzyć raport impozycji teraz?",
+  "lbl_auto_rotate": "Auto-obrót:",
+  "opt_rotate_ccw": "Przeciwnie do wskazówek zegara (–90°)",
+  "opt_rotate_cw": "Zgodnie ze wskazówkami zegara (+90°)",
+  "opt_rotate_off": "Wył."
 }

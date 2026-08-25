@@ -139,5 +139,9 @@
   "lbl_pdf_preset": "Predefinição PDF:",
   "chk_job_report": "Gerar relatório de imposição (Job Report .txt)",
   "msg_job_report_saved": "Relatório de imposição salvo em:\n",
-  "msg_open_job_report": "Abrir o relatório de imposição agora?"
+  "msg_open_job_report": "Abrir o relatório de imposição agora?",
+  "lbl_auto_rotate": "Rotação auto.:",
+  "opt_rotate_ccw": "Anti-horário (–90°)",
+  "opt_rotate_cw": "Horário (+90°)",
+  "opt_rotate_off": "Desligado"
 }

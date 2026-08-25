@@ -139,5 +139,9 @@
   "lbl_pdf_preset": "Paramètre PDF :",
   "chk_job_report": "Générer le rapport d'imposition (Job Report .txt)",
   "msg_job_report_saved": "Rapport d'imposition enregistré sous :\n",
-  "msg_open_job_report": "Ouvrir le rapport d'imposition maintenant ?"
+  "msg_open_job_report": "Ouvrir le rapport d'imposition maintenant ?",
+  "lbl_auto_rotate": "Rotation auto :",
+  "opt_rotate_ccw": "Sens antihoraire (–90°)",
+  "opt_rotate_cw": "Sens horaire (+90°)",
+  "opt_rotate_off": "Désactivé"
 }

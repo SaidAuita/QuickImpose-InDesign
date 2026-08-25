@@ -148,5 +148,9 @@
   "lbl_pdf_preset": "PDF Preset:",
   "chk_job_report": "Generate Imposition Job Report (.txt)",
   "msg_job_report_saved": "Imposition Job Report saved to:\n",
-  "msg_open_job_report": "Open Job Report now?"
+  "msg_open_job_report": "Open Job Report now?",
+  "lbl_auto_rotate": "Auto-rotate:",
+  "opt_rotate_ccw": "Counter-clockwise (–90°)",
+  "opt_rotate_cw": "Clockwise (+90°)",
+  "opt_rotate_off": "Off"
 }

@@ -22,6 +22,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Настройки вылета (Bleed)",
             lbl_bleed_input: "Вылет под обрез (мм): ",
             lbl_trim_calc: "Размер страницы (Trim): ",
+            lbl_auto_rotate: "Автоповорот: ",
+            opt_rotate_ccw: "Против часовой (–90°)",
+            opt_rotate_cw: "По часовой (+90°)",
+            opt_rotate_off: "Отключено",
             btn_cancel: "Отмена",
             btn_ok: "Создать документ",
             alert_success: "Документ успешно создан!\nСтраниц: {0}\nОбрезной размер: {1} × {2} {3}\nВылет: {4} {3}",
@@ -37,6 +41,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Bleed Settings",
             lbl_bleed_input: "Bleed (mm): ",
             lbl_trim_calc: "Page Size (Trim): ",
+            lbl_auto_rotate: "Auto-rotate: ",
+            opt_rotate_ccw: "Counter-clockwise (–90°)",
+            opt_rotate_cw: "Clockwise (+90°)",
+            opt_rotate_off: "Off",
             btn_cancel: "Cancel",
             btn_ok: "Create Document",
             alert_success: "Document created successfully!\nPages: {0}\nTrim size: {1} × {2} {3}\nBleed: {4} {3}",
@@ -52,6 +60,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Anschnitt-Einstellungen (Bleed)",
             lbl_bleed_input: "Anschnitt (mm): ",
             lbl_trim_calc: "Seitengröße (Trim): ",
+            lbl_auto_rotate: "Auto-Drehung: ",
+            opt_rotate_ccw: "Gegen den Uhrzeigersinn (–90°)",
+            opt_rotate_cw: "Im Uhrzeigersinn (+90°)",
+            opt_rotate_off: "Aus",
             btn_cancel: "Abbrechen",
             btn_ok: "Dokument erstellen",
             alert_success: "Dokument erfolgreich erstellt!\nSeiten: {0}\nEndformat: {1} × {2} {3}\nAnschnitt: {4} {3}",
@@ -67,6 +79,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Ajustes de sangrado (Bleed)",
             lbl_bleed_input: "Sangrado (mm): ",
             lbl_trim_calc: "Tamaño de página (Trim): ",
+            lbl_auto_rotate: "Rotación auto.: ",
+            opt_rotate_ccw: "Antihorario (–90°)",
+            opt_rotate_cw: "Horario (+90°)",
+            opt_rotate_off: "Desactivado",
             btn_cancel: "Cancelar",
             btn_ok: "Crear documento",
             alert_success: "¡Documento creado con éxito!\nPáginas: {0}\nTamaño de corte: {1} × {2} {3}\nSangrado: {4} {3}",
@@ -82,6 +98,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Réglages du fond perdu (Bleed)",
             lbl_bleed_input: "Fond perdu (mm) : ",
             lbl_trim_calc: "Taille de page (Trim) : ",
+            lbl_auto_rotate: "Rotation auto : ",
+            opt_rotate_ccw: "Sens antihoraire (–90°)",
+            opt_rotate_cw: "Sens horaire (+90°)",
+            opt_rotate_off: "Désactivé",
             btn_cancel: "Annuler",
             btn_ok: "Créer le document",
             alert_success: "Document créé avec succès !\nPages : {0}\nTaille de coupe : {1} × {2} {3}\nFond perdu : {4} {3}",
@@ -97,6 +117,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Impostazioni abbondanza (Bleed)",
             lbl_bleed_input: "Abbondanza (mm): ",
             lbl_trim_calc: "Dimensione pagina (Trim): ",
+            lbl_auto_rotate: "Rotazione auto: ",
+            opt_rotate_ccw: "Antiorario (–90°)",
+            opt_rotate_cw: "Orario (+90°)",
+            opt_rotate_off: "Disattivo",
             btn_cancel: "Annulla",
             btn_ok: "Crea documento",
             alert_success: "Documento creato con successo!\nPagine: {0}\nFormato rifilato: {1} × {2} {3}\nAbbondanza: {4} {3}",
@@ -112,6 +136,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "裁ち落とし設定 (Bleed)",
             lbl_bleed_input: "裁ち落とし (mm): ",
             lbl_trim_calc: "仕上がりサイズ (Trim): ",
+            lbl_auto_rotate: "自動回転: ",
+            opt_rotate_ccw: "反時計回り (–90°)",
+            opt_rotate_cw: "時計回り (+90°)",
+            opt_rotate_off: "オフ",
             btn_cancel: "キャンセル",
             btn_ok: "ドキュメントを作成",
             alert_success: "ドキュメントが正常に作成されました！\nページ数: {0}\n仕上がりサイズ: {1} × {2} {3}\n裁ち落とし: {4} {3}",
@@ -127,6 +155,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Ustawienia spadów (Bleed)",
             lbl_bleed_input: "Spad pod obcięcie (mm): ",
             lbl_trim_calc: "Rozmiar strony (Trim): ",
+            lbl_auto_rotate: "Auto-obrót: ",
+            opt_rotate_ccw: "Przeciwnie do wskazówek zegara (–90°)",
+            opt_rotate_cw: "Zgodnie ze wskazówkami zegara (+90°)",
+            opt_rotate_off: "Wył.",
             btn_cancel: "Anuluj",
             btn_ok: "Utwórz dokument",
             alert_success: "Dokument został pomyślnie utworzony!\nStrony: {0}\nFormat netto: {1} × {2} {3}\nSpad: {4} {3}",
@@ -142,6 +174,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "Definições de sangria (Bleed)",
             lbl_bleed_input: "Sangria (mm): ",
             lbl_trim_calc: "Tamanho da página (Trim): ",
+            lbl_auto_rotate: "Rotação auto.: ",
+            opt_rotate_ccw: "Anti-horário (–90°)",
+            opt_rotate_cw: "Horário (+90°)",
+            opt_rotate_off: "Desligado",
             btn_cancel: "Cancelar",
             btn_ok: "Criar documento",
             alert_success: "Documento criado com sucesso!\nPáginas: {0}\nTamanho final: {1} × {2} {3}\nSangria: {4} {3}",
@@ -157,6 +193,10 @@ function parseSafeFloat(val) {
             pnl_bleed: "出血设置 (Bleed)",
             lbl_bleed_input: "出血 (mm): ",
             lbl_trim_calc: "页面尺寸 (Trim): ",
+            lbl_auto_rotate: "自动旋转: ",
+            opt_rotate_ccw: "逆时针 (–90°)",
+            opt_rotate_cw: "顺时针 (+90°)",
+            opt_rotate_off: "关闭",
             btn_cancel: "取消",
             btn_ok: "创建文档",
             alert_success: "文档已成功创建！\n页数: {0}\n裁切尺寸: {1} × {2} {3}\n出血: {4} {3}",
@@ -457,6 +497,17 @@ function parseSafeFloat(val) {
     var chkUniformAfter = pnlBleed.add("checkbox", undefined, t.chk_uniform_after || "Make Uniform After Import");
     chkUniformAfter.value = true;
 
+    var grpRotate = pnlBleed.add("group");
+    grpRotate.orientation = "row";
+    grpRotate.alignChildren = ["left", "center"];
+    var lblRotate = grpRotate.add("statictext", undefined, t.lbl_auto_rotate || "Auto-rotate:");
+    var ddlRotate = grpRotate.add("dropdownlist", undefined, [
+        t.opt_rotate_ccw || "Counter-clockwise (-90°)",
+        t.opt_rotate_cw || "Clockwise (+90°)",
+        t.opt_rotate_off || "Off"
+    ]);
+    ddlRotate.selection = 0; // Default: Counter-clockwise
+
     var txtTrimCalc = pnlBleed.add("statictext", undefined, "");
     txtTrimCalc.preferredSize.width = 360;
 
@@ -528,6 +579,15 @@ function parseSafeFloat(val) {
         lblInside.text = (t.lbl_inside || "Inside") + ":";
         lblOutside.text = (t.lbl_outside || "Outside") + ":";
         chkUniformAfter.text = t.chk_uniform_after || "Make Uniform After Import";
+        if (typeof lblRotate !== "undefined") lblRotate.text = t.lbl_auto_rotate || "Auto-rotate:";
+        if (typeof ddlRotate !== "undefined") {
+            var prevSel = ddlRotate.selection ? ddlRotate.selection.index : 0;
+            ddlRotate.removeAll();
+            ddlRotate.add("item", t.opt_rotate_ccw || "Counter-clockwise (-90°)");
+            ddlRotate.add("item", t.opt_rotate_cw || "Clockwise (+90°)");
+            ddlRotate.add("item", t.opt_rotate_off || "Off");
+            ddlRotate.selection = prevSel;
+        }
         updateTrimCalc();
         if (typeof btnCancel !== "undefined") btnCancel.text = t.btn_cancel;
         if (typeof btnOK !== "undefined") btnOK.text = t.btn_ok;
@@ -594,6 +654,12 @@ function parseSafeFloat(val) {
     var iB = parseSafeFloat(editInside.text) || 0;
     var oB = parseSafeFloat(editOutside.text) || 0;
 
+    var autoRotateMode = "ccw";
+    if (ddlRotate && ddlRotate.selection) {
+        if (ddlRotate.selection.index === 1) autoRotateMode = "cw";
+        else if (ddlRotate.selection.index === 2) autoRotateMode = "off";
+    }
+
     var trimW = Math.max(1, pdfDim.width - iB - oB);
     var trimH = Math.max(1, pdfDim.height - tB - bB);
 
@@ -644,7 +710,33 @@ function parseSafeFloat(val) {
             try { frame.strokeColor = srcDoc.swatches.item("None"); } catch (e1) {}
             try { frame.fillColor = srcDoc.swatches.item("None"); } catch (e2) {}
 
-            safePlacePDF(frame, selectedPdf, pageNum);
+            var pdfItem = safePlacePDF(frame, selectedPdf, pageNum);
+
+            if (!pdfItem && frame.allGraphics && frame.allGraphics.length > 0) {
+                pdfItem = frame.allGraphics[0];
+            }
+            if (!pdfItem && frame.pdfs && frame.pdfs.length > 0) {
+                pdfItem = frame.pdfs[0];
+            }
+
+            if (pdfItem && autoRotateMode !== "off") {
+                var b = pdfItem.geometricBounds;
+                var itemW = Math.abs(b[3] - b[1]);
+                var itemH = Math.abs(b[2] - b[0]);
+
+                var isSlotLandscape = trimW > trimH;
+                var isPageLandscape = itemW > itemH;
+
+                if (Math.abs(itemW - itemH) > 0.5 && isSlotLandscape !== isPageLandscape) {
+                    if (autoRotateMode === "cw") {
+                        pdfItem.rotationAngle = -90;
+                    } else {
+                        // "ccw" default (counter-clockwise)
+                        pdfItem.rotationAngle = 90;
+                    }
+                }
+            }
+
             try { frame.fit(FitOptions.CENTER_CONTENT); } catch (eFit) {}
         }
     } finally {

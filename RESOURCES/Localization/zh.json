@@ -139,5 +139,9 @@
   "lbl_pdf_preset": "PDF 预设:",
   "chk_job_report": "生成拼版作业报告 (.txt)",
   "msg_job_report_saved": "拼版作业报告已保存至：\n",
-  "msg_open_job_report": "是否立即打开作业报告？"
+  "msg_open_job_report": "是否立即打开作业报告？",
+  "lbl_auto_rotate": "自动旋转:",
+  "opt_rotate_ccw": "逆时针 (–90°)",
+  "opt_rotate_cw": "顺时针 (+90°)",
+  "opt_rotate_off": "关闭"
 }
