@@ -18,7 +18,6 @@
 * **Live Trim & Inset Calculation**: Dynamic formula display `(Margin - Bleed = Clean margin)` showing exact remaining safe margin after guillotine cutting.
 * **PDF Auto-Rotation Options**: Automatic rotation of landscape/portrait PDF pages to match document orientation (Counter-clockwise -90°, Clockwise +90°, or Off).
 * **Uniform Bleeds After Import**: Easy toggle to normalize asymmetric source bleed boxes into uniform document bleed offsets.
-* **Dual Footer Hyperlinks**: Integrated clickable links for the GitHub repository and free tools hub.
 
 ---
 
@@ -134,7 +133,6 @@ Once installed, **QuickImpose** will be selectable in the PDF Export Preset drop
 * **Живой расчет чистого отступа**: Динамическая формула `(Отступ - Вылеты = Чистый отступ)` в интерфейсе (например, `(5 - 3 = 2 мм)`), наглядно показывающая реальный отступ макета после порезки.
 * **Автоповорот страниц PDF при импорте**: Возможность автоматически поворачивать ориентацию страниц PDF под ориентацию документа (Против часовой –90°, По часовой +90° или Отключено).
 * **Сделать вылеты одинаковыми**: Опция нормализации асимметричных вылетов импортированного PDF в единые симметричные поля документа InDesign.
-* **Кликабельные ссылки в подвале**: Интерактивные ссылки на репозиторий GitHub и каталог бесплатных инструментов.
 
 ---
 
